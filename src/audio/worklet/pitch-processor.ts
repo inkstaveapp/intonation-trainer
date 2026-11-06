@@ -22,6 +22,9 @@ class PitchProcessor extends AudioWorkletProcessor {
   private pos = 0;
   private filled = 0;
   private sinceHop = 0;
+  private costSum = 0;
+  private costN = 0;
+  private costMs = 0;
   private hop = Math.round(sampleRate / UPDATES_PER_SECOND);
 
   constructor() {
@@ -58,8 +61,16 @@ class PitchProcessor extends AudioWorkletProcessor {
       peak = Math.max(peak, Math.abs(v));
     }
     const rms = Math.sqrt(sum / n);
+    // AudioWorkletGlobalScope has no performance.now(); Date.now() is 1 ms coarse, so average over 60 frames.
+    const t0 = Date.now();
     const r = detectPitch(this.win, { sampleRate, ...DETECTOR, prior: this.prior });
+    this.costSum += Date.now() - t0;
+    if (++this.costN === 60) {
+      this.costMs = this.costSum / 60;
+      this.costSum = this.costN = 0;
+    }
     this.port.postMessage({
+      costMs: this.costMs,
       freq: r?.freq ?? 0,
       clarity: r?.clarity ?? 0,
       rms,

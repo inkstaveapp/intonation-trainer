@@ -6,6 +6,7 @@ import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
 import { applyTheme, THEMES, useTheme, type Theme } from '~/state/theme';
 import { useTuner } from '~/state/tuner';
+import { DebugPanel, debugEnabled } from '~/ui/DebugPanel';
 import { Drone } from '~/ui/pages/Drone';
 import { History } from '~/ui/pages/History';
 import { ReportPage } from '~/ui/pages/Report';
@@ -91,6 +92,7 @@ export function App() {
       {popOut
         ? createPortal(<TunerWidget mode="pip" />, popOut.document.body)
         : !inlineTuner && <TunerWidget />}
+      {debugEnabled() && <DebugPanel />}
     </main>
   );
 }

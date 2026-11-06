@@ -8,6 +8,8 @@ export interface PitchFrame {
   peak: number;
   /** AudioContext time in seconds: the shared clock for metronome and scoring. */
   t: number;
+  /** Average detector time per frame in ms over the last 60 frames (0 until measured). Diagnostics only. */
+  costMs?: number;
 }
 
 export type Warning = 'clipping' | 'highLatency';
