@@ -1,7 +1,7 @@
 # Intonation Trainer
 
 [![Deploy](https://github.com/inkstaveapp/intonation-trainer/actions/workflows/pages.yml/badge.svg)](https://github.com/inkstaveapp/intonation-trainer/actions/workflows/pages.yml)
-[![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Practise your intonation with live feedback. Play a note and see how many cents sharp or flat you are, score your playing, and keep a log of your sessions. It runs in the browser, works offline, and never records or uploads your audio.
 
@@ -120,4 +120,4 @@ Issues and pull requests are welcome. Before you open a pull request, run `npm r
 
 ## Licence
 
-[BSD Zero Clause License](LICENSE). Do whatever you like with it.
+[MIT](LICENSE). You are free to use, change and share it, as long as the licence notice stays with it.
