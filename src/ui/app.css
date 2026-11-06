@@ -1,0 +1,62 @@
+/* App-wide controls, matching the widget's chips and buttons. The widget's own classes override these. */
+button,
+select {
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--button);
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  padding: 0 14px;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+button:hover,
+select:hover {
+  border-color: var(--muted);
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+button[aria-current='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+input[type='range'] {
+  accent-color: var(--accent);
+}
+h1 {
+  font-size: 26px;
+  margin: 0;
+}
+fieldset {
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+}
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.app-nav .spacer {
+  flex: 1;
+}

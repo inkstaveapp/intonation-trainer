@@ -7,6 +7,7 @@ export type SessionRecord = Omit<Session, 'track'>;
 
 export interface Settings {
   lang: 'en' | 'nl';
+  theme: 'system' | 'light' | 'dark';
   instrument: string;
   a4: number;
   tuningKind: 'equal' | 'just';

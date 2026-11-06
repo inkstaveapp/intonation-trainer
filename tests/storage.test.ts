@@ -54,6 +54,7 @@ describe('storage', () => {
   it('round-trips settings', async () => {
     const s: Settings = {
       lang: 'nl',
+      theme: 'dark',
       instrument: 'clarinet-bb',
       a4: 443,
       tuningKind: 'just',
@@ -74,6 +75,7 @@ describe('sanitizeSettings', () => {
     expect(sanitizeSettings('x')).toEqual({});
     const out = sanitizeSettings({
       lang: 'fr',
+      theme: 'sepia',
       a4: 900,
       tuningKind: 'weird',
       tolerance: { good: 20, warn: 10, zero: 5 },

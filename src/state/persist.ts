@@ -2,6 +2,7 @@ import { clampA4 } from '~/music/pitch';
 import { loadSettings, saveSettings, type Settings } from '~/storage/db';
 import { SIGNATURES, useMetronome, type SigId } from '~/state/metronome';
 import { useDrone } from '~/state/drone';
+import { THEMES, useTheme } from '~/state/theme';
 import { useTuner } from '~/state/tuner';
 import { useWidget } from '~/state/widget';
 
@@ -23,6 +24,8 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
   const out: Partial<Settings> = {};
   const lang = oneOf(raw.lang, ['en', 'nl'] as const);
   if (lang) out.lang = lang;
+  const theme = oneOf(raw.theme, THEMES);
+  if (theme) out.theme = theme;
   if (typeof raw.instrument === 'string') out.instrument = raw.instrument;
   const a4 = num(raw.a4, 415, 466);
   if (a4 !== undefined) out.a4 = clampA4(a4);
@@ -52,6 +55,7 @@ const collect = (): Settings => {
   const m = useMetronome.getState();
   return {
     lang: t.lang,
+    theme: useTheme.getState().theme,
     instrument: t.instrument,
     a4: t.a4,
     tuningKind: t.tuningKind,
@@ -72,6 +76,7 @@ function apply(s: Partial<Settings>): void {
     ...(s.droneWritten !== undefined && { droneWritten: s.droneWritten }),
     ...(s.tolerance && { tolerance: s.tolerance }),
   });
+  if (s.theme) useTheme.setState({ theme: s.theme });
   if (s.droneVolume !== undefined) useDrone.setState({ volume: s.droneVolume });
   if (s.widget) useWidget.setState(s.widget);
   if (s.metronome) useMetronome.setState({ ...s.metronome, sig: s.metronome.sig as SigId });
@@ -96,5 +101,6 @@ export async function initPersistence(): Promise<void> {
       void saveSettings(now).catch(() => undefined);
     }, 300);
   };
-  for (const store of [useTuner, useWidget, useMetronome, useDrone]) store.subscribe(schedule);
+  for (const store of [useTuner, useWidget, useMetronome, useDrone, useTheme])
+    store.subscribe(schedule);
 }

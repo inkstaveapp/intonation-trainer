@@ -4,6 +4,7 @@ import { translate, type Key } from '~/i18n';
 import { useToneSync } from '~/state/drone';
 import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
+import { applyTheme, THEMES, useTheme, type Theme } from '~/state/theme';
 import { useTuner } from '~/state/tuner';
 import { Drone } from '~/ui/pages/Drone';
 import { History } from '~/ui/pages/History';
@@ -21,15 +22,29 @@ export function App() {
   const [reportId, setReportId] = useState<string | null>(null);
   const last = useSession((s) => s.last);
   const popOut = usePopOut((s) => s.win);
+  const { theme, setTheme } = useTheme();
   useToneSync();
+  useEffect(() => {
+    const apply = () => {
+      applyTheme(document, theme);
+      if (popOut) applyTheme(popOut.document, theme);
+    };
+    apply();
+    const dark = matchMedia('(prefers-color-scheme: dark)');
+    dark.addEventListener('change', apply); // "system" follows the OS while the app is open
+    return () => dark.removeEventListener('change', apply);
+  }, [theme, popOut]);
   const inlineTuner = page === 'tuner' && !reportId && !popOut; // the tuner page IS the tuner, so no floating copy
   useEffect(() => {
     if (last) setReportId(last.id); // show the report as soon as a recording stops
   }, [last]);
   return (
     <main style={{ padding: 20, maxWidth: 960, margin: '0 auto' }}>
-      <h1>{translate(lang, 'appTitle')}</h1>
-      <nav style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+      <header className="app-header">
+        <img className="logo" src="/icon.svg" alt="" />
+        <h1>{translate(lang, 'appTitle')}</h1>
+      </header>
+      <nav className="app-nav">
         {NAV.map((id) => (
           <button
             key={id}
@@ -42,6 +57,18 @@ export function App() {
             {translate(lang, `nav.${id}` as Key)}
           </button>
         ))}
+        <span className="spacer" />
+        <select
+          aria-label={translate(lang, 'theme.label')}
+          value={theme}
+          onChange={(e) => setTheme(e.target.value as Theme)}
+        >
+          {THEMES.map((th) => (
+            <option key={th} value={th}>
+              {translate(lang, `theme.${th}` as Key)}
+            </option>
+          ))}
+        </select>
         <select
           aria-label={translate(lang, 'language')}
           value={lang}
