@@ -85,6 +85,8 @@ export const nl: Dict = {
   'pip.open': 'Widget in los venster',
   'pip.close': 'Widget terug naar de pagina',
   'pip.blocked': 'Kon geen los venster openen. Sta pop-ups toe voor deze site.',
+  'export.csv': 'Exporteer CSV',
+  'export.all': 'Exporteer alle sessies (CSV)',
   'tuner.start': 'Begin met luisteren',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Te luid: zet het ingangsniveau lager',

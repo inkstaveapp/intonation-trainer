@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { downloadText } from '~/export/download';
+import { exportFileName, sessionsToCsv } from '~/export/csv';
 import { translate, type Key } from '~/i18n';
 import { deleteSession, listSessions, type SessionRecord } from '~/storage/db';
 import { useSession } from '~/state/session';
@@ -25,33 +27,40 @@ export function History({ onOpen }: { onOpen: (id: string) => void }) {
   if (rows === null) return null;
   if (rows.length === 0) return <p>{t('history.empty')}</p>;
   return (
-    <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8, maxWidth: 480 }}>
-      {rows.map((r) => (
-        <li key={r.id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button style={{ flex: 1, textAlign: 'left' }} onClick={() => onOpen(r.id)}>
-            {formatDate(r.startedAt, lang)} · {t(`instrument.${r.instrument}` as Key)} ·{' '}
-            {t('report.score')} {r.summary.combined} ({r.summary.noteCount} {t('session.notes')})
-          </button>
-          {confirming === r.id ? (
-            <>
-              <button
-                onClick={() =>
-                  void deleteSession(r.id)
-                    .then(() => setRows(rows.filter((x) => x.id !== r.id)))
-                    .finally(() => setConfirming(null))
-                }
-              >
-                {t('history.yes')}
-              </button>
-              <button onClick={() => setConfirming(null)}>{t('history.no')}</button>
-            </>
-          ) : (
-            <button aria-label={t('history.delete')} onClick={() => setConfirming(r.id)}>
-              ✕
+    <>
+      <button
+        onClick={() => downloadText(exportFileName('history', Date.now()), sessionsToCsv(rows))}
+      >
+        {t('export.all')}
+      </button>
+      <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: 8, maxWidth: 480 }}>
+        {rows.map((r) => (
+          <li key={r.id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button style={{ flex: 1, textAlign: 'left' }} onClick={() => onOpen(r.id)}>
+              {formatDate(r.startedAt, lang)} · {t(`instrument.${r.instrument}` as Key)} ·{' '}
+              {t('report.score')} {r.summary.combined} ({r.summary.noteCount} {t('session.notes')})
             </button>
-          )}
-        </li>
-      ))}
-    </ul>
+            {confirming === r.id ? (
+              <>
+                <button
+                  onClick={() =>
+                    void deleteSession(r.id)
+                      .then(() => setRows(rows.filter((x) => x.id !== r.id)))
+                      .finally(() => setConfirming(null))
+                  }
+                >
+                  {t('history.yes')}
+                </button>
+                <button onClick={() => setConfirming(null)}>{t('history.no')}</button>
+              </>
+            ) : (
+              <button aria-label={t('history.delete')} onClick={() => setConfirming(r.id)}>
+                ✕
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

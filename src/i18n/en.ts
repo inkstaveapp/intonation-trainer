@@ -82,6 +82,8 @@ export const en = {
   'pip.open': 'Pop out widget',
   'pip.close': 'Return widget to the page',
   'pip.blocked': 'Could not open a separate window. Allow pop-ups for this site.',
+  'export.csv': 'Export CSV',
+  'export.all': 'Export all sessions (CSV)',
   'tuner.start': 'Start listening',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Too loud: lower the input level',

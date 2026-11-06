@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { downloadText } from '~/export/download';
+import { exportFileName, notesToCsv } from '~/export/csv';
 import { translate, type Key, type Lang } from '~/i18n';
 import { noteName } from '~/music/notes';
 import { worstNotes } from '~/scoring/score';
@@ -46,7 +48,12 @@ export function ReportPage({ id, onBack }: { id: string; onBack: () => void }) {
   const pct = (x: number) => Math.round((100 * x) / (w.accuracy + w.stability));
   return (
     <article className="report">
-      {back}
+      {back}{' '}
+      {m.noteCount > 0 && (
+        <button onClick={() => downloadText(exportFileName('session', s.startedAt), notesToCsv(s))}>
+          {t('export.csv')}
+        </button>
+      )}
       <h2>{t('report.title')}</h2>
       <p className="report-meta">
         {formatDate(s.startedAt, lang)} · {t(`instrument.${s.instrument}` as Key)} · A {s.a4} ·{' '}
