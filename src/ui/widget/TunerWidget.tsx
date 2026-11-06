@@ -29,7 +29,11 @@ function useElapsed(recording: boolean, startedMs: number): string {
   return mmss(recording ? Date.now() - startedMs : 0);
 }
 
-export function TunerWidget({ pip = false }: { pip?: boolean }) {
+export type WidgetMode = 'floating' | 'pip' | 'page';
+
+export function TunerWidget({ mode = 'floating' }: { mode?: WidgetMode }) {
+  const floating = mode === 'floating';
+  const page = mode === 'page';
   const s = useTuner();
   const w = useWidget();
   const m = useMetronome();
@@ -41,6 +45,7 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
   const grab = useRef({ dx: 0, dy: 0 });
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
 
+  const collapsed = w.collapsed && !page; // the full-page tuner is always expanded
   const listening = s.status === 'listening';
   const cents = s.reading?.cents ?? null;
   const note = s.reading ? noteName(s.reading.writtenMidi) : '–';
@@ -48,7 +53,8 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
   const nextA = A_CHOICES[(A_CHOICES.indexOf(s.a4) + 1) % A_CHOICES.length]!;
 
   const down = (e: PointerEvent) => {
-    if (pip || (e.target as HTMLElement).closest('button,select,input') || !root.current) return;
+    if (!floating || (e.target as HTMLElement).closest('button,select,input') || !root.current)
+      return;
     const r = root.current.getBoundingClientRect();
     grab.current = { dx: e.clientX - r.left, dy: e.clientY - r.top };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -77,10 +83,10 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
   const collapseButton = (
     <button
       className="tw-btn"
-      aria-label={w.collapsed ? t('widget.expand') : t('widget.collapse')}
+      aria-label={collapsed ? t('widget.expand') : t('widget.collapse')}
       onClick={w.toggleCollapsed}
     >
-      {w.collapsed ? '▴' : '▾'}
+      {collapsed ? '▴' : '▾'}
     </button>
   );
 
@@ -88,8 +94,8 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
     <section
       ref={root}
       className="tw"
-      data-collapsed={w.collapsed}
-      data-corner={pip ? 'pip' : drag ? 'drag' : w.corner}
+      data-collapsed={collapsed}
+      data-corner={floating ? (drag ? 'drag' : w.corner) : mode}
       data-size={w.size}
       data-dragging={drag !== null}
       style={{
@@ -105,7 +111,7 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
       {m.running && m.mode === 'flash' && (
         <span key={m.tick} className="tw-flash" data-accent={m.beat === 0} />
       )}
-      {w.collapsed ? (
+      {collapsed ? (
         <div className="tw-pill">
           <span className="tw-note-sm">{note}</span>
           <CentsBar cents={cents} tolerance={s.tolerance} label={t('widget.cents')} />
@@ -141,17 +147,19 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
             >
               ⧉
             </button>
-            {collapseButton}
+            {!page && collapseButton}
           </div>
           {po.blocked && <p role="alert">{t('pip.blocked')}</p>}
-          <div className="tw-note" aria-live="off">
-            {note}
+          <div className="tw-main">
+            <div className="tw-note" aria-live="off">
+              {note}
+            </div>
+            <div className="tw-cents">{centsText || ' '}</div>
+            <CentsBar cents={cents} tolerance={s.tolerance} label={t('widget.cents')} />
+            <PitchTrail />
+            {s.warnings.includes('clipping') && <p role="alert">{t('tuner.tooLoud')}</p>}
+            {s.warnings.includes('highLatency') && <p role="alert">{t('tuner.highLatency')}</p>}
           </div>
-          <div className="tw-cents">{centsText || ' '}</div>
-          <CentsBar cents={cents} tolerance={s.tolerance} label={t('widget.cents')} />
-          <PitchTrail />
-          {s.warnings.includes('clipping') && <p role="alert">{t('tuner.tooLoud')}</p>}
-          {s.warnings.includes('highLatency') && <p role="alert">{t('tuner.highLatency')}</p>}
           <div className="tw-metro">
             <div className="tw-row">
               <button
@@ -217,7 +225,7 @@ export function TunerWidget({ pip = false }: { pip?: boolean }) {
               <span className="tw-rec-dot" aria-hidden="true" />
               {rec.recording ? elapsed : t('rec.label')}
             </button>
-            {!pip && (
+            {floating && (
               <>
                 <button className="tw-chip" aria-label={t('widget.size')} onClick={w.cycleSize}>
                   {w.size.toUpperCase()}

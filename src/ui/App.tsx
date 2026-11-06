@@ -22,11 +22,12 @@ export function App() {
   const last = useSession((s) => s.last);
   const popOut = usePopOut((s) => s.win);
   useToneSync();
+  const inlineTuner = page === 'tuner' && !reportId && !popOut; // the tuner page IS the tuner, so no floating copy
   useEffect(() => {
     if (last) setReportId(last.id); // show the report as soon as a recording stops
   }, [last]);
   return (
-    <main style={{ padding: 20 }}>
+    <main style={{ padding: 20, maxWidth: 960, margin: '0 auto' }}>
       <h1>{translate(lang, 'appTitle')}</h1>
       <nav style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         {NAV.map((id) => (
@@ -60,7 +61,9 @@ export function App() {
           return <Page />;
         })()
       )}
-      {popOut ? createPortal(<TunerWidget pip />, popOut.document.body) : <TunerWidget />}
+      {popOut
+        ? createPortal(<TunerWidget mode="pip" />, popOut.document.body)
+        : !inlineTuner && <TunerWidget />}
     </main>
   );
 }

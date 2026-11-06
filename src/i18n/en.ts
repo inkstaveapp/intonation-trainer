@@ -39,7 +39,8 @@ export const en = {
   'metro.bpm': 'Tempo in beats per minute',
   'nav.tuner': 'Tuner',
   'nav.drone': 'Drone',
-  'tuner.hint': 'Play a note. The floating tuner shows how far you are from it.',
+  'tuner.hint':
+    'Play a note and see how far you are from it. On other pages the tuner floats over the content; use ⧉ to pop it out.',
   'drone.hint':
     'Pick the tonic as written for your instrument. The drone sounds its concert pitch.',
   'drone.tonic': 'Tonic',
@@ -84,6 +85,7 @@ export const en = {
   'pip.blocked': 'Could not open a separate window. Allow pop-ups for this site.',
   'export.csv': 'Export CSV',
   'export.all': 'Export all sessions (CSV)',
+  'pip.active': 'The tuner is open in a separate window.',
   'tuner.start': 'Start listening',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Too loud: lower the input level',

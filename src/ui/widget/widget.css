@@ -76,8 +76,12 @@
   margin-top: 12px;
   justify-content: space-between;
 }
+.tw-foot .tw-chip {
+  flex: none;
+}
 .tw-foot input {
-  flex: 1;
+  flex: 1 1 60px;
+  min-width: 0;
   min-height: 44px;
   accent-color: var(--accent);
 }
@@ -225,7 +229,9 @@
 .tw-rec {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .tw-rec-dot {
@@ -250,7 +256,7 @@
 }
 
 .tw[data-corner='pip'] {
-  position: static;
+  position: relative;
   transform: none;
   opacity: 1 !important;
   box-sizing: border-box;
@@ -270,6 +276,11 @@
   display: flex;
   flex-direction: column;
 }
+.tw[data-corner='pip'] .tw-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 .tw[data-corner='pip'] .pitch-trail-wrap {
   flex: 1;
   height: auto;
@@ -277,4 +288,65 @@
 }
 .tw[data-corner='pip'] .tw-pill {
   width: 100%;
+}
+
+/* Full-page tuner: same component, laid out for the whole window. */
+.tw[data-corner='page'] {
+  position: relative;
+  transform: none;
+  opacity: 1 !important;
+  touch-action: auto;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.tw[data-corner='page'] .tw-card {
+  width: auto;
+  box-shadow: none;
+  display: grid;
+  gap: 8px 40px;
+  grid-template-columns: minmax(0, 1fr);
+}
+.tw[data-corner='page'] .tw-main {
+  display: flex;
+  flex-direction: column;
+}
+.tw[data-corner='page'] .tw-note {
+  font-size: 96px;
+}
+.tw[data-corner='page'] .tw-cents {
+  font-size: 32px;
+}
+.tw[data-corner='page'] .pitch-trail-wrap {
+  height: 120px;
+}
+.tw[data-corner='page'] .tw-metro {
+  align-content: start;
+}
+@media (min-width: 760px) {
+  .tw[data-corner='page'] .tw-card {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+  .tw[data-corner='page'] .tw-card > .tw-row:first-child,
+  .tw[data-corner='page'] .tw-card > [role='alert'] {
+    grid-column: 1 / -1;
+  }
+  /* Tuner on the left; metronome, then mic and record, stacked on the right. */
+  .tw[data-corner='page'] .tw-main {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+  }
+  .tw[data-corner='page'] .tw-main .pitch-trail-wrap {
+    flex: 1;
+    height: auto;
+    min-height: 180px;
+  }
+  .tw[data-corner='page'] .tw-metro {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .tw[data-corner='page'] .tw-foot {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+  }
 }

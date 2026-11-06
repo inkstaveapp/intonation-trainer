@@ -41,7 +41,8 @@ export const nl: Dict = {
   'metro.bpm': 'Tempo in slagen per minuut',
   'nav.tuner': 'Stemapparaat',
   'nav.drone': 'Bourdon',
-  'tuner.hint': 'Speel een noot. Het zwevende stemapparaat laat zien hoe ver je ervan af zit.',
+  'tuner.hint':
+    'Speel een noot en zie hoe ver je ervan af zit. Op andere pagina’s zweeft het stemapparaat over de inhoud; gebruik ⧉ om het los te maken.',
   'drone.hint':
     'Kies de grondtoon zoals geschreven voor je instrument. De bourdon klinkt op de klinkende toonhoogte.',
   'drone.tonic': 'Grondtoon',
@@ -87,6 +88,7 @@ export const nl: Dict = {
   'pip.blocked': 'Kon geen los venster openen. Sta pop-ups toe voor deze site.',
   'export.csv': 'Exporteer CSV',
   'export.all': 'Exporteer alle sessies (CSV)',
+  'pip.active': 'Het stemapparaat staat in een los venster.',
   'tuner.start': 'Begin met luisteren',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Te luid: zet het ingangsniveau lager',
