@@ -161,3 +161,58 @@
   font-size: 13px;
   margin: 8px 0 0;
 }
+
+.tw-metro {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+}
+.tw-bpm {
+  flex: 1;
+  text-align: center;
+  font-size: 40px;
+  font-weight: 600;
+}
+.tw-metro .tw-chip {
+  flex: 1;
+  min-height: 44px;
+}
+.beat-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  height: 16px;
+}
+.beat-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--track);
+}
+.beat-dots span[data-accent='true'] {
+  width: 16px;
+  height: 16px;
+  margin-top: -3px;
+}
+.beat-dots span[data-active='true'] {
+  background: var(--accent);
+}
+.tw-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 3px solid var(--accent);
+  pointer-events: none;
+  animation: tw-flash 0.18s ease-out forwards;
+}
+.tw-flash[data-accent='true'] {
+  border-color: var(--amber);
+}
+@keyframes tw-flash {
+  from {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+  }
+}

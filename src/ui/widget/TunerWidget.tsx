@@ -2,6 +2,7 @@ import { useRef, useState, type PointerEvent } from 'react';
 import { translate, type Key } from '~/i18n';
 import { INSTRUMENT_LIST } from '~/music/instruments';
 import { noteName } from '~/music/notes';
+import { SIG_IDS, SIGNATURES, useMetronome, type SigId } from '~/state/metronome';
 import { useTuner } from '~/state/tuner';
 import { useWidget, type Corner } from '~/state/widget';
 import { CentsBar } from './CentsBar';
@@ -13,6 +14,7 @@ const A_CHOICES = [440, 442, 443];
 export function TunerWidget() {
   const s = useTuner();
   const w = useWidget();
+  const m = useMetronome();
   const t = (k: Key) => translate(s.lang, k);
   const root = useRef<HTMLElement>(null);
   const grab = useRef({ dx: 0, dy: 0 });
@@ -79,6 +81,9 @@ export function TunerWidget() {
       onPointerUp={up}
       onPointerCancel={up}
     >
+      {m.running && m.mode === 'flash' && (
+        <span key={m.tick} className="tw-flash" data-accent={m.beat === 0} />
+      )}
       {w.collapsed ? (
         <div className="tw-pill">
           <span className="tw-note-sm">{note}</span>
@@ -118,6 +123,60 @@ export function TunerWidget() {
           <PitchTrail />
           {s.warnings.includes('clipping') && <p role="alert">{t('tuner.tooLoud')}</p>}
           {s.warnings.includes('highLatency') && <p role="alert">{t('tuner.highLatency')}</p>}
+          <div className="tw-metro">
+            <div className="tw-row">
+              <button
+                className="tw-btn"
+                aria-label={t('metro.bpmDown')}
+                onClick={() => m.setBpm(m.bpm - 1)}
+              >
+                −
+              </button>
+              <div className="tw-bpm" role="status" aria-label={t('metro.bpm')}>
+                {m.bpm}
+              </div>
+              <button
+                className="tw-btn"
+                aria-label={t('metro.bpmUp')}
+                onClick={() => m.setBpm(m.bpm + 1)}
+              >
+                +
+              </button>
+              <button
+                className="tw-btn"
+                aria-label={m.running ? t('metro.stop') : t('metro.play')}
+                onClick={() => void m.toggle()}
+              >
+                {m.running ? '■' : '▶'}
+              </button>
+            </div>
+            <div className="tw-row">
+              <button className="tw-chip" onClick={m.tap}>
+                {t('metro.tap')}
+              </button>
+              <select
+                className="tw-chip"
+                aria-label={t('metro.sig')}
+                value={m.sig}
+                onChange={(e) => m.setSig(e.target.value as SigId)}
+              >
+                {SIG_IDS.map((id) => (
+                  <option key={id}>{id}</option>
+                ))}
+              </select>
+              <button className="tw-chip" aria-label={t('metro.mode')} onClick={m.cycleMode}>
+                {t(`metro.mode.${m.mode}` as Key)}
+              </button>
+            </div>
+            <div className="beat-dots" aria-hidden="true">
+              {Array.from({ length: SIGNATURES[m.sig] }, (_, i) => (
+                <span key={i} data-active={m.beat === i} data-accent={i === 0} />
+              ))}
+            </div>
+            {m.running && m.mode === 'sound' && m.headphones === 'none' && (
+              <p role="alert">{t('metro.noHeadphones')}</p>
+            )}
+          </div>
           <div className="tw-row tw-foot">
             {micButton}
             <button className="tw-chip" aria-label={t('widget.size')} onClick={w.cycleSize}>

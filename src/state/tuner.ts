@@ -9,6 +9,7 @@ import {
 } from '~/music/instruments';
 import { A4_DEFAULT, centsBetween, clampA4, midiToFreq, nearestMidi } from '~/music/pitch';
 import { DEFAULT_TOLERANCE, type Tolerance } from '~/scoring/tolerance';
+import { metronome } from '~/state/metronome';
 import { detectLang, type Lang } from '~/i18n';
 
 const DISPLAY_INTERVAL_MS = 80; // ~12 fps for the UI; scoring subscribers get every frame
@@ -65,6 +66,7 @@ export const useTuner = create<TunerState>((set, get) => {
     },
     onWarning: (w) => !get().warnings.includes(w) && set({ warnings: [...get().warnings, w] }),
     onAutoPause: () => set({ status: 'paused', reading: null }),
+    isMuted: (t) => metronome.isMuted(t),
   });
 
   return {

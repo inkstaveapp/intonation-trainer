@@ -1,4 +1,5 @@
 import type { InstrumentProfile } from '~/music/instruments';
+import { getAudioContext } from './context';
 import workletUrl from '~/audio/worklet/pitch-processor.ts?worker&url';
 
 export interface PitchFrame {
@@ -16,8 +17,11 @@ export interface EngineHandlers {
   onFrame: (f: PitchFrame) => void;
   onWarning: (w: Warning) => void;
   onAutoPause: () => void;
+  /** Frames at these AudioContext times are dropped (e.g. around metronome clicks). */
+  isMuted?: (t: number) => boolean;
 }
 
+let workletLoaded = false;
 const CLIP_PEAK = 0.99;
 const HIGH_LATENCY_S = 0.15;
 const SILENCE_PAUSE_S = 20;
@@ -49,8 +53,11 @@ export class PitchEngine {
     this.stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
     });
-    this.ctx = new AudioContext({ latencyHint: 'interactive' });
-    await this.ctx.audioWorklet.addModule(workletUrl);
+    this.ctx = await getAudioContext();
+    if (!workletLoaded) {
+      await this.ctx.audioWorklet.addModule(workletUrl);
+      workletLoaded = true;
+    }
     this.node = new AudioWorkletNode(this.ctx, 'pitch-processor', { numberOfOutputs: 0 });
     this.node.port.onmessage = (e: MessageEvent<PitchFrame>) => this.handle(e.data);
     this.ctx.createMediaStreamSource(this.stream).connect(this.node);
@@ -74,8 +81,7 @@ export class PitchEngine {
   async stop(): Promise<void> {
     this.node?.disconnect();
     this.stream?.getTracks().forEach((t) => t.stop());
-    await this.ctx?.close();
-    this.node = this.stream = this.ctx = null;
+    this.node = this.stream = this.ctx = null; // the shared context stays open for the metronome
   }
 
   private configure() {
@@ -97,6 +103,7 @@ export class PitchEngine {
       void this.stop().then(() => this.h.onAutoPause());
       return;
     }
+    if (this.h.isMuted?.(f.t)) return;
     this.h.onFrame(f);
   }
 }
