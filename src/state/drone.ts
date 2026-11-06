@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { getAudioContext } from '~/audio/context';
+import { getAudioContext, peekAudioContext } from '~/audio/context';
 import { headphonesState } from '~/audio/scheduler';
 import { Tone } from '~/audio/tone';
 import { getInstrument, writtenToSounding } from '~/music/instruments';
@@ -57,9 +57,10 @@ export function useToneSync(): void {
   const a4 = useTuner((s) => s.a4);
   const freq = useTuner((s) => droneFreq(s));
   useEffect(() => {
-    void getAudioContext().then((ctx) => {
-      if (drone.playing) drone.setFreq(ctx, freq);
-      if (reference.playing) reference.setFreq(ctx, a4);
-    });
+    // Nothing can be sounding without a context, and creating one here would happen before any click.
+    const ctx = peekAudioContext();
+    if (!ctx) return;
+    if (drone.playing) drone.setFreq(ctx, freq);
+    if (reference.playing) reference.setFreq(ctx, a4);
   }, [a4, freq]);
 }

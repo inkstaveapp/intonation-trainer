@@ -152,6 +152,7 @@ export function TunerWidget({ mode = 'floating' }: { mode?: WidgetMode }) {
             {!page && collapseButton}
           </div>
           {po.blocked && <p role="alert">{t('pip.blocked')}</p>}
+          {s.error && <p role="alert">{t(`tuner.err.${s.error}` as Key)}</p>}
           <div className="tw-main">
             <div className="tw-note" aria-live="off">
               {note}

@@ -87,6 +87,12 @@ export const en = {
   'pitch.bb-low': 'B♭ (octave lower): tenor sax, bass clarinet',
   'pitch.eb-low': 'E♭ (octave lower): baritone sax',
   'pitch.c-up': 'C (octave higher): piccolo',
+  'tuner.err.insecure':
+    'The microphone needs a secure connection: open this page over HTTPS or on localhost.',
+  'tuner.err.denied':
+    "Microphone access was blocked. Allow it in the browser's site settings and try again.",
+  'tuner.err.noMic': 'No microphone was found.',
+  'tuner.err.failed': 'Could not start listening.',
   'tuner.start': 'Start listening',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Too loud: lower the input level',

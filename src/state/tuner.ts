@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { PitchEngine, type PitchFrame, type Warning } from '~/audio/engine';
 import { FrameFilter } from '~/audio/filter';
+import { micErrorKind, type MicError } from '~/audio/micError';
 import {
   DEFAULT_INSTRUMENT,
   getInstrument,
@@ -31,6 +32,8 @@ interface TunerState {
   reading: Reading | null;
   warnings: Warning[];
   tolerance: Tolerance;
+  /** Why the last attempt to listen failed; null when it did not. */
+  error: MicError | null;
   tuningKind: 'equal' | 'just';
   /** Drone tonic as a written pitch for the selected instrument. */
   droneWritten: number;
@@ -95,6 +98,7 @@ export const useTuner = create<TunerState>((set, get) => {
     reading: null,
     warnings: [],
     tolerance: DEFAULT_TOLERANCE,
+    error: null,
     tuningKind: 'equal',
     droneWritten: 60,
     setLang: (lang) => set({ lang }),
@@ -105,13 +109,17 @@ export const useTuner = create<TunerState>((set, get) => {
     setTuningKind: (tuningKind) => set({ tuningKind }),
     setDroneWritten: (droneWritten) => set({ droneWritten }),
     start: async () => {
-      set({ warnings: [] });
-      await engine.start();
-      set({ status: 'listening' });
+      set({ warnings: [], error: null });
+      try {
+        await engine.start();
+        set({ status: 'listening' });
+      } catch (e) {
+        set({ error: micErrorKind(e, !!navigator.mediaDevices) });
+      }
     },
     stop: async () => {
       await engine.stop();
-      set({ status: 'idle', reading: null });
+      set({ status: 'idle', reading: null, error: null });
     },
   };
 });

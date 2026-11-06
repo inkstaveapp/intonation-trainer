@@ -90,6 +90,12 @@ export const nl: Dict = {
   'pitch.bb-low': 'Bes (octaaf lager): tenorsax, basklarinet',
   'pitch.eb-low': 'Es (octaaf lager): baritonsax',
   'pitch.c-up': 'C (octaaf hoger): piccolo',
+  'tuner.err.insecure':
+    'De microfoon vereist een beveiligde verbinding: open deze pagina via HTTPS of op localhost.',
+  'tuner.err.denied':
+    'Toegang tot de microfoon is geblokkeerd. Sta het toe in de site-instellingen van de browser en probeer opnieuw.',
+  'tuner.err.noMic': 'Er is geen microfoon gevonden.',
+  'tuner.err.failed': 'Kon niet beginnen met luisteren.',
   'tuner.start': 'Begin met luisteren',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Te luid: zet het ingangsniveau lager',

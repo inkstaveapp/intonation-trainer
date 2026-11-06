@@ -48,22 +48,32 @@ export class PitchEngine {
   async start(prior?: number): Promise<void> {
     if (this.running) return;
     this.prior = prior;
+    // The context first: resume() must run while the click's user gesture is still valid (Safari, iOS),
+    // and the permission prompt below can use that up.
+    const ctx = await getAudioContext();
     // Processing off: AGC/noise suppression would distort the pitch and level.
-    this.stream = await navigator.mediaDevices.getUserMedia({
+    const stream = await navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
     });
-    this.ctx = await getAudioContext();
-    if (!workletLoaded) {
-      await this.ctx.audioWorklet.addModule(workletUrl);
-      workletLoaded = true;
+    try {
+      if (!workletLoaded) {
+        await ctx.audioWorklet.addModule(workletUrl);
+        workletLoaded = true;
+      }
+      const node = new AudioWorkletNode(ctx, 'pitch-processor', { numberOfOutputs: 0 });
+      node.port.onmessage = (e: MessageEvent<PitchFrame>) => this.handle(e.data);
+      ctx.createMediaStreamSource(stream).connect(node);
+      this.ctx = ctx;
+      this.stream = stream;
+      this.node = node;
+    } catch (e) {
+      stream.getTracks().forEach((t) => t.stop()); // do not leave the mic open after a failed start
+      throw e;
     }
-    this.node = new AudioWorkletNode(this.ctx, 'pitch-processor', { numberOfOutputs: 0 });
-    this.node.port.onmessage = (e: MessageEvent<PitchFrame>) => this.handle(e.data);
-    this.ctx.createMediaStreamSource(this.stream).connect(this.node);
     this.configure();
-    this.lastSound = this.ctx.currentTime;
+    this.lastSound = ctx.currentTime;
     // outputLatency is missing in some browsers; baseLatency alone then understates it.
-    const latency = this.ctx.baseLatency + (this.ctx.outputLatency ?? 0);
+    const latency = ctx.baseLatency + (ctx.outputLatency ?? 0);
     if (latency > HIGH_LATENCY_S) this.h.onWarning('highLatency');
   }
 
