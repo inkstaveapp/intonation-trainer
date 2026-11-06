@@ -1,4 +1,4 @@
-import { detectPitch } from '~/audio/mpm';
+import { DETECTOR, detectPitch } from '~/audio/mpm';
 
 // Minimal typings for AudioWorkletGlobalScope (not in the DOM lib).
 declare const sampleRate: number;
@@ -12,17 +12,13 @@ declare function registerProcessor(name: string, ctor: new () => AudioWorkletPro
 const UPDATES_PER_SECOND = 60;
 
 interface Config {
-  minHz: number;
-  maxHz: number;
-  windowSize: number;
-  guardTwelfth: boolean;
   prior?: number | undefined;
 }
 
 class PitchProcessor extends AudioWorkletProcessor {
-  private cfg: Config = { minHz: 190, maxHz: 2600, windowSize: 1024, guardTwelfth: true };
-  private ring = new Float32Array(1024);
-  private win = new Float32Array(1024);
+  private prior: number | undefined;
+  private ring = new Float32Array(DETECTOR.windowSize);
+  private win = new Float32Array(DETECTOR.windowSize);
   private pos = 0;
   private filled = 0;
   private sinceHop = 0;
@@ -31,10 +27,7 @@ class PitchProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
     this.port.onmessage = (e: MessageEvent<Config>) => {
-      this.cfg = e.data;
-      this.ring = new Float32Array(e.data.windowSize);
-      this.win = new Float32Array(e.data.windowSize);
-      this.pos = this.filled = this.sinceHop = 0;
+      this.prior = e.data.prior;
     };
   }
 
@@ -65,7 +58,7 @@ class PitchProcessor extends AudioWorkletProcessor {
       peak = Math.max(peak, Math.abs(v));
     }
     const rms = Math.sqrt(sum / n);
-    const r = detectPitch(this.win, { sampleRate, ...this.cfg });
+    const r = detectPitch(this.win, { sampleRate, ...DETECTOR, prior: this.prior });
     this.port.postMessage({
       freq: r?.freq ?? 0,
       clarity: r?.clarity ?? 0,

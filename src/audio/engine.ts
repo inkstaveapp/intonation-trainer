@@ -1,6 +1,5 @@
-import type { InstrumentProfile } from '~/music/instruments';
 import { getAudioContext } from './context';
-import workletUrl from '~/audio/worklet/pitch-processor.ts?worker&url';
+import workletUrl from './worklet/pitch-processor.ts?worker&url';
 
 export interface PitchFrame {
   freq: number; // 0 when nothing periodic was found
@@ -31,7 +30,6 @@ export class PitchEngine {
   private ctx: AudioContext | null = null;
   private stream: MediaStream | null = null;
   private node: AudioWorkletNode | null = null;
-  private profile: InstrumentProfile | null = null;
   private prior: number | undefined;
   private lastSound = 0;
 
@@ -45,9 +43,8 @@ export class PitchEngine {
     return this.node !== null;
   }
 
-  async start(profile: InstrumentProfile, prior?: number): Promise<void> {
+  async start(prior?: number): Promise<void> {
     if (this.running) return;
-    this.profile = profile;
     this.prior = prior;
     // Processing off: AGC/noise suppression would distort the pitch and level.
     this.stream = await navigator.mediaDevices.getUserMedia({
@@ -68,11 +65,6 @@ export class PitchEngine {
     if (latency > HIGH_LATENCY_S) this.h.onWarning('highLatency');
   }
 
-  setProfile(profile: InstrumentProfile): void {
-    this.profile = profile;
-    this.configure();
-  }
-
   setPrior(freq: number | undefined): void {
     this.prior = freq;
     this.configure();
@@ -85,15 +77,7 @@ export class PitchEngine {
   }
 
   private configure() {
-    if (!this.node || !this.profile) return;
-    const { minHz, maxHz, windowSize, oddHarmonics } = this.profile;
-    this.node.port.postMessage({
-      minHz,
-      maxHz,
-      windowSize,
-      guardTwelfth: oddHarmonics,
-      prior: this.prior,
-    });
+    this.node?.port.postMessage({ prior: this.prior });
   }
 
   private handle(f: PitchFrame) {

@@ -51,20 +51,14 @@ describe('instruments and notes', () => {
   it('concert pitch does not transpose', () => {
     expect(writtenToSounding(60, INSTRUMENTS.c!)).toBe(60);
   });
-  it('lookup table: every preset is well-formed, ids unique', () => {
+  it('lookup table: ids are unique', () => {
     expect(new Set(INSTRUMENT_LIST.map((p) => p.id)).size).toBe(INSTRUMENT_LIST.length);
-    for (const p of INSTRUMENT_LIST) {
-      expect(p.minHz).toBeLessThan(p.maxHz);
-      expect([1024, 2048]).toContain(p.windowSize);
-    }
   });
-  it('presets select the right transposition and detector settings', () => {
+  it('presets select the right transposition', () => {
     expect(getInstrument('eb-down').transposition).toBe(-9);
     expect(getInstrument('f').transposition).toBe(-7);
     expect(getInstrument('c-up').transposition).toBe(12);
-    expect(getInstrument('bb-low').windowSize).toBe(2048);
-    expect(getInstrument('bb').oddHarmonics).toBe(true);
-    expect(getInstrument('c').oddHarmonics).toBe(false);
+    expect(getInstrument('bb-low').transposition).toBe(-14);
     expect(getInstrument('nope').id).toBe('c');
   });
   it('names notes', () => {

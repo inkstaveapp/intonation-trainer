@@ -100,14 +100,13 @@ export const useTuner = create<TunerState>((set, get) => {
     setLang: (lang) => set({ lang }),
     setInstrument: (instrument) => {
       set({ instrument });
-      if (engine.running) engine.setProfile(getInstrument(instrument));
     },
     setA4: (a4) => set({ a4: clampA4(a4) }),
     setTuningKind: (tuningKind) => set({ tuningKind }),
     setDroneWritten: (droneWritten) => set({ droneWritten }),
     start: async () => {
       set({ warnings: [] });
-      await engine.start(getInstrument(get().instrument));
+      await engine.start();
       set({ status: 'listening' });
     },
     stop: async () => {

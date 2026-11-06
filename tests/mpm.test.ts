@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { detectPitch } from '~/audio/mpm';
-import { centsBetween, midiToFreq } from '~/music/pitch';
+import { DETECTOR, detectPitch } from '~/audio/mpm';
+import { centsBetween } from '~/music/pitch';
 
 const SR = 48000;
 const harmonic = (f: number, amps: number[], n = 1024, sr = SR, phase = 0.3) => {
@@ -53,19 +53,40 @@ describe('detectPitch', () => {
     expect(r === null || r.clarity < 0.6).toBe(true);
   });
 
-  it('works with the twelfth guard off (all-harmonic tone)', () => {
-    const f = 330;
-    const r = detectPitch(harmonic(f, [1, 0.6, 0.4, 0.3], 2048), {
-      ...opts,
-      minHz: 80,
-      guardTwelfth: false,
-    })!;
-    expect(Math.abs(centsBetween(r.freq, f))).toBeLessThan(2);
-  });
+  describe('fixed wide range (DETECTOR) for every instrument', () => {
+    const wide = (sampleRate: number) => ({
+      sampleRate,
+      minHz: DETECTOR.minHz,
+      maxHz: DETECTOR.maxHz,
+    });
+    const frame = (f: number, amps: number[], sr: number) =>
+      harmonic(f, amps, DETECTOR.windowSize, sr);
 
-  it('works for bass clarinet range with a 2048 window', () => {
-    const f = midiToFreq(40, 442); // E2
-    const r = detectPitch(harmonic(f, CLARINET, 2048), { sampleRate: SR, minHz: 65, maxHz: 700 })!;
-    expect(Math.abs(centsBetween(r.freq, f))).toBeLessThan(2);
+    it.each([
+      [55, 'low bass'],
+      [82.41, 'bass clarinet E2'],
+      [233.08, 'chalumeau'],
+      [880, 'mid'],
+      [1760, 'high'],
+    ])('odd-harmonic %f Hz (%s) within ±2 cents at 48 kHz and 44.1 kHz', (f) => {
+      for (const sr of [48000, 44100]) {
+        const r = detectPitch(frame(f, CLARINET, sr), wide(sr))!;
+        expect(Math.abs(centsBetween(r.freq, f))).toBeLessThan(2);
+      }
+    });
+
+    it('an all-harmonic tone (violin-like) is not pulled down by the twelfth guard', () => {
+      for (const f of [196, 330, 659.26]) {
+        const r = detectPitch(frame(f, [1, 0.6, 0.4, 0.3, 0.2], SR), wide(SR))!;
+        expect(Math.abs(centsBetween(r.freq, f))).toBeLessThan(2);
+      }
+    });
+
+    it('piccolo-range sines stay within 5 cents (lags of only 11-23 samples)', () => {
+      for (const f of [2093, 3136, 4186]) {
+        const r = detectPitch(frame(f, [1], SR), wide(SR))!;
+        expect(Math.abs(centsBetween(r.freq, f))).toBeLessThan(5);
+      }
+    });
   });
 });

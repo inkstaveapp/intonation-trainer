@@ -1,5 +1,8 @@
 import { centsBetween } from '~/music/pitch';
 
+/** One detector setup for every instrument: wide enough for bassoon to piccolo. */
+export const DETECTOR = { minHz: 50, maxHz: 4300, windowSize: 2048 } as const;
+
 export interface PitchResult {
   freq: number;
   clarity: number;
@@ -11,8 +14,6 @@ export interface DetectOptions {
   maxHz: number;
   /** Known target pitch in Hz (exercise mode). Octave/twelfth candidates are folded onto it. */
   prior?: number | undefined;
-  /** Guard against twelfth errors (odd-harmonic instruments). Default true. */
-  guardTwelfth?: boolean;
 }
 
 const KEY_MAX_RATIO = 0.9; // MPM "k": first key maximum above k * global max
@@ -86,7 +87,7 @@ export function detectPitch(x: Float32Array, o: DetectOptions): PitchResult | nu
 
   // Twelfth guard: a strong 3rd harmonic can win the NSDF. If f/3 has real energy, it is the fundamental.
   const sub = freq / 3;
-  if ((o.guardTwelfth ?? true) && sub >= o.minHz) {
+  if (sub >= o.minHz) {
     const fundamental = toneMagnitude(x, freq, o.sampleRate);
     if (toneMagnitude(x, sub, o.sampleRate) >= SUBHARMONIC_RATIO * fundamental) freq = sub;
   }
