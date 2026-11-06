@@ -7,6 +7,7 @@ import { worstNotes } from '~/scoring/score';
 import { getSessionRecord, type SessionRecord } from '~/storage/db';
 import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
+import { pitchLabel } from '~/ui/labels';
 import { NoteChart } from '~/ui/charts/NoteChart';
 import { TendencyMap } from '~/ui/charts/TendencyMap';
 import './report.css';
@@ -56,7 +57,7 @@ export function ReportPage({ id, onBack }: { id: string; onBack: () => void }) {
       )}
       <h2>{t('report.title')}</h2>
       <p className="report-meta">
-        {formatDate(s.startedAt, lang)} · {t(`instrument.${s.instrument}` as Key)} · A {s.a4} ·{' '}
+        {formatDate(s.startedAt, lang)} · {pitchLabel(lang, s.instrument)} · A {s.a4} ·{' '}
         {t(`drone.${s.tuningKind}` as Key)}
       </p>
       {m.noteCount === 0 ? (

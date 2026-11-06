@@ -42,14 +42,14 @@ describe('pitch', () => {
 describe('instruments and notes', () => {
   it('transposes written <-> sounding', () => {
     const written = 72; // C5
-    expect(writtenToSounding(written, INSTRUMENTS['clarinet-eb']!)).toBe(75); // E♭
-    expect(writtenToSounding(written, INSTRUMENTS['clarinet-bb']!)).toBe(70); // B♭
-    expect(writtenToSounding(written, INSTRUMENTS['clarinet-bass']!)).toBe(58);
+    expect(writtenToSounding(written, INSTRUMENTS['eb-up']!)).toBe(75); // E♭
+    expect(writtenToSounding(written, INSTRUMENTS.bb!)).toBe(70); // B♭
+    expect(writtenToSounding(written, INSTRUMENTS['bb-low']!)).toBe(58);
     for (const i of Object.values(INSTRUMENTS))
       expect(soundingToWritten(writtenToSounding(60, i), i)).toBe(60);
   });
   it('concert pitch does not transpose', () => {
-    expect(writtenToSounding(60, INSTRUMENTS.concert!)).toBe(60);
+    expect(writtenToSounding(60, INSTRUMENTS.c!)).toBe(60);
   });
   it('lookup table: every preset is well-formed, ids unique', () => {
     expect(new Set(INSTRUMENT_LIST.map((p) => p.id)).size).toBe(INSTRUMENT_LIST.length);
@@ -59,13 +59,13 @@ describe('instruments and notes', () => {
     }
   });
   it('presets select the right transposition and detector settings', () => {
-    expect(getInstrument('sax-alto').transposition).toBe(-9);
-    expect(getInstrument('horn-f').transposition).toBe(-7);
-    expect(getInstrument('piccolo').transposition).toBe(12);
-    expect(getInstrument('clarinet-bass').windowSize).toBe(2048);
-    expect(getInstrument('clarinet-bb').oddHarmonics).toBe(true);
-    expect(getInstrument('trumpet-bb').oddHarmonics).toBe(false);
-    expect(getInstrument('nope').id).toBe('concert');
+    expect(getInstrument('eb-down').transposition).toBe(-9);
+    expect(getInstrument('f').transposition).toBe(-7);
+    expect(getInstrument('c-up').transposition).toBe(12);
+    expect(getInstrument('bb-low').windowSize).toBe(2048);
+    expect(getInstrument('bb').oddHarmonics).toBe(true);
+    expect(getInstrument('c').oddHarmonics).toBe(false);
+    expect(getInstrument('nope').id).toBe('c');
   });
   it('names notes', () => {
     expect(noteName(69)).toBe('A4');
@@ -95,7 +95,7 @@ describe('tuning', () => {
 
 describe('centsFromTarget', () => {
   // B♭ clarinet: written C4 sounds B♭3 (58). Written E4 sounds D4 (62), a major third above the drone.
-  const bb = INSTRUMENTS['clarinet-bb']!;
+  const bb = INSTRUMENTS.bb!;
   const tuning = { kind: 'just', droneMidi: writtenToSounding(60, bb) } as const;
   it('measures against the just target, not equal temperament', () => {
     const sounding = writtenToSounding(64, bb);

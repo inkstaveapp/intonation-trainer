@@ -12,7 +12,7 @@ const session = buildSession(
     id: 'abc',
     startedAt: Date.UTC(2026, 10, 6, 12, 0, 0),
     durationS: 3.2,
-    instrument: 'clarinet-bb', // written = sounding + 2
+    instrument: 'bb', // written = sounding + 2
     a4: 442,
     tuningKind: 'just',
     droneWritten: 60,

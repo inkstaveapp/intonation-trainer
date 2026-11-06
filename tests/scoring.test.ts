@@ -90,7 +90,7 @@ describe('scoring', () => {
     id: 't',
     startedAt: 0,
     durationS: 4,
-    instrument: 'clarinet-bb', // written = sounding + 2
+    instrument: 'bb', // written = sounding + 2
     a4: 442,
     tuningKind: 'equal' as const,
     droneWritten: 60,

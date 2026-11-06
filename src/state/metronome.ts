@@ -6,11 +6,6 @@ import { bpmFromTaps, clampBpm, headphonesState } from '~/audio/scheduler';
 export const SIGNATURES = { '2/4': 2, '3/4': 3, '4/4': 4, '6/8': 6 } as const;
 export type SigId = keyof typeof SIGNATURES;
 export type ClickMode = 'sound' | 'flash' | 'haptic';
-const NEXT_MODE: Record<ClickMode, ClickMode> = {
-  sound: 'flash',
-  flash: 'haptic',
-  haptic: 'sound',
-};
 const SIG_IDS = Object.keys(SIGNATURES) as SigId[];
 
 export const metronome = new Metronome();
@@ -27,7 +22,7 @@ interface MetroState {
   headphones: 'ok' | 'none' | 'unknown';
   setBpm: (bpm: number) => void;
   setSig: (s: SigId) => void;
-  cycleMode: () => void;
+  setMode: (m: ClickMode) => void;
   tap: () => void;
   toggle: () => Promise<void>;
 }
@@ -79,8 +74,8 @@ export const useMetronome = create<MetroState>((set, get) => {
       set({ sig });
       sync();
     },
-    cycleMode: () => {
-      set({ mode: NEXT_MODE[get().mode] });
+    setMode: (mode) => {
+      set({ mode });
       sync();
     },
     tap: () => {

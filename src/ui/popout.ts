@@ -4,7 +4,7 @@ export interface PopOutEnv {
 }
 
 export const POPOUT_SIZE = {
-  expanded: { width: 344, height: 500 },
+  expanded: { width: 344, height: 580 },
   collapsed: { width: 296, height: 96 },
 };
 

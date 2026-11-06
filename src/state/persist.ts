@@ -1,3 +1,4 @@
+import { INSTRUMENTS } from '~/music/instruments';
 import { clampA4 } from '~/music/pitch';
 import { loadSettings, saveSettings, type Settings } from '~/storage/db';
 import { SIGNATURES, useMetronome, type SigId } from '~/state/metronome';
@@ -26,7 +27,8 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
   if (lang) out.lang = lang;
   const theme = oneOf(raw.theme, THEMES);
   if (theme) out.theme = theme;
-  if (typeof raw.instrument === 'string') out.instrument = raw.instrument;
+  if (typeof raw.instrument === 'string' && INSTRUMENTS[raw.instrument])
+    out.instrument = raw.instrument;
   const a4 = num(raw.a4, 415, 466);
   if (a4 !== undefined) out.a4 = clampA4(a4);
   const tk = oneOf(raw.tuningKind, ['equal', 'just'] as const);

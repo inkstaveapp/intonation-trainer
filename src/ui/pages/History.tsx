@@ -5,6 +5,7 @@ import { translate, type Key } from '~/i18n';
 import { deleteSession, listSessions, type SessionRecord } from '~/storage/db';
 import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
+import { pitchLabel } from '~/ui/labels';
 import { formatDate } from './Report';
 
 export function History({ onOpen }: { onOpen: (id: string) => void }) {
@@ -37,7 +38,7 @@ export function History({ onOpen }: { onOpen: (id: string) => void }) {
         {rows.map((r) => (
           <li key={r.id} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button style={{ flex: 1, textAlign: 'left' }} onClick={() => onOpen(r.id)}>
-              {formatDate(r.startedAt, lang)} · {t(`instrument.${r.instrument}` as Key)} ·{' '}
+              {formatDate(r.startedAt, lang)} · {pitchLabel(lang, r.instrument)} ·{' '}
               {t('report.score')} {r.summary.combined} ({r.summary.noteCount} {t('session.notes')})
             </button>
             {confirming === r.id ? (

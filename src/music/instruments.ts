@@ -1,5 +1,9 @@
 export type InstrumentId = string;
 
+/**
+ * What matters to the player is the instrument's pitch (its transposition). The rest is detector tuning
+ * chosen per pitch, never shown: the search range and window suit the instruments of that pitch.
+ */
 export interface InstrumentProfile {
   id: InstrumentId;
   /** Semitones to add to a written pitch to get the sounding pitch. */
@@ -13,30 +17,23 @@ export interface InstrumentProfile {
   oddHarmonics: boolean;
 }
 
-type Row = [nl: string, transposition: number, minHz: number, maxHz: number, odd?: true];
+type Row = [id: string, transposition: number, minHz: number, maxHz: number, odd?: true];
 
 /**
- * Lookup table (display names live in i18n as `instrument.<id>`): picking an instrument selects its transposition, search range, detector window
- * and detector guards. Add a row to support another instrument.
+ * Lookup table: one row per pitch. Display names (with the instruments that use it) live in i18n as
+ * `pitch.<id>`. Ranges are the union of the instruments listed in that name.
  */
 const TABLE: Row[] = [
-  ['concert', 0, 80, 2600],
-  ['clarinet-eb', 3, 190, 2600, true],
-  ['clarinet-bb', -2, 140, 2000, true],
-  ['clarinet-a', -3, 130, 2000, true],
-  ['clarinet-bass', -14, 65, 700, true],
-  ['trumpet-bb', -2, 150, 1300],
-  ['trumpet-c', 0, 150, 1300],
-  ['horn-f', -7, 60, 900],
-  ['trombone', 0, 75, 900],
-  ['sax-soprano', -2, 200, 1500],
-  ['sax-alto', -9, 130, 1200],
-  ['sax-tenor', -14, 100, 900],
-  ['sax-baritone', -21, 60, 650],
-  ['flute', 0, 240, 2400],
-  ['piccolo', 12, 500, 4300],
-  ['oboe', 0, 220, 1800],
-  ['bassoon', 0, 50, 800],
+  ['c', 0, 50, 2600], // flute, oboe, bassoon, trombone, C trumpet, violin ...
+  ['bb', -2, 140, 2000, true], // clarinet, trumpet, soprano sax
+  ['a', -3, 130, 2000, true], // A clarinet
+  ['eb-up', 3, 190, 2600, true], // E♭ clarinet
+  ['eb-down', -9, 130, 1200], // alto sax
+  ['f', -7, 60, 900], // horn
+  ['g', -5, 180, 1700], // alto flute
+  ['bb-low', -14, 65, 900, true], // tenor sax, bass clarinet
+  ['eb-low', -21, 60, 650], // baritone sax
+  ['c-up', 12, 500, 4300], // piccolo
 ];
 
 const profile = ([id, transposition, minHz, maxHz, odd]: Row): InstrumentProfile => ({
@@ -48,7 +45,7 @@ const profile = ([id, transposition, minHz, maxHz, odd]: Row): InstrumentProfile
   oddHarmonics: odd === true,
 });
 
-export const DEFAULT_INSTRUMENT: InstrumentId = 'concert';
+export const DEFAULT_INSTRUMENT: InstrumentId = 'c';
 
 export const INSTRUMENT_LIST: InstrumentProfile[] = TABLE.map(profile);
 
@@ -56,7 +53,7 @@ export const INSTRUMENTS: Record<InstrumentId, InstrumentProfile> = Object.fromE
   INSTRUMENT_LIST.map((p) => [p.id, p]),
 );
 
-/** Unknown ids (e.g. from old stored settings) fall back to concert pitch. */
+/** Unknown ids fall back to concert pitch. */
 export const getInstrument = (id: InstrumentId): InstrumentProfile =>
   INSTRUMENTS[id] ?? INSTRUMENTS[DEFAULT_INSTRUMENT]!;
 

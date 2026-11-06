@@ -11,8 +11,8 @@ describe('i18n', () => {
   });
   it('every instrument preset has a name in every language', () => {
     for (const p of INSTRUMENT_LIST) {
-      expect(en).toHaveProperty([`instrument.${p.id}`]);
-      expect(nl).toHaveProperty([`instrument.${p.id}`]);
+      expect(en).toHaveProperty([`pitch.${p.id}`]);
+      expect(nl).toHaveProperty([`pitch.${p.id}`]);
     }
   });
   it('detects Dutch, falls back to English', () => {

@@ -23,7 +23,7 @@ const session = (id: string, startedAt: number) =>
       id,
       startedAt,
       durationS: 1,
-      instrument: 'concert',
+      instrument: 'c',
       a4: 442,
       tuningKind: 'equal',
       droneWritten: 60,
@@ -55,7 +55,7 @@ describe('storage', () => {
     const s: Settings = {
       lang: 'nl',
       theme: 'dark',
-      instrument: 'clarinet-bb',
+      instrument: 'bb',
       a4: 443,
       tuningKind: 'just',
       droneWritten: 62,
@@ -70,6 +70,11 @@ describe('storage', () => {
 });
 
 describe('sanitizeSettings', () => {
+  it('keeps only instrument ids that exist', () => {
+    expect(sanitizeSettings({ instrument: 'bb-low' })).toEqual({ instrument: 'bb-low' });
+    expect(sanitizeSettings({ instrument: 'sax-tenor' })).toEqual({});
+  });
+
   it('drops malformed values and clamps out-of-range ones', () => {
     expect(sanitizeSettings(null)).toEqual({});
     expect(sanitizeSettings('x')).toEqual({});
