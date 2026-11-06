@@ -1,0 +1,94 @@
+.report {
+  max-width: 600px;
+}
+.report-meta {
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+.report-score {
+  font-size: 64px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.report-weights {
+  color: var(--muted);
+  margin-top: 0;
+}
+.report-stats {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+}
+.report-stats dd {
+  margin: 0;
+  font-weight: 600;
+}
+.chart {
+  width: 100%;
+  height: auto;
+}
+.chart-band {
+  fill: var(--accent);
+  opacity: 0.12;
+}
+.chart-axis {
+  stroke: var(--muted);
+}
+.chart-bar {
+  fill: var(--accent);
+}
+.chart-bar[data-state='warn'] {
+  fill: var(--amber);
+}
+.chart-bar[data-state='bad'] {
+  fill: var(--coral);
+}
+.chart-label {
+  fill: var(--muted);
+  font-size: 11px;
+}
+.tendency {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.tendency li {
+  display: grid;
+  grid-template-columns: 48px 1fr 110px;
+  gap: 12px;
+  align-items: center;
+}
+.tendency-track {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+}
+.tendency-mid {
+  position: absolute;
+  left: 50%;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--muted);
+}
+.tendency-dot {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.tendency-dot[data-state='warn'] {
+  background: var(--amber);
+}
+.tendency-dot[data-state='bad'] {
+  background: var(--coral);
+}
+.tendency-val {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}

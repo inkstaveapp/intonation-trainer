@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { saveSession } from '~/storage/db';
 import { centsFromTarget } from '~/music/tuning';
 import { buildSession } from '~/scoring/score';
 import type { Frame, Session } from '~/scoring/types';
@@ -44,6 +45,8 @@ export const useSession = create<SessionState>((set, get) => ({
       );
       frames = [];
       beats = [];
+      // Empty sessions are shown but not kept; storage errors must not lose the on-screen report.
+      if (session.notes.length > 0) void saveSession(session).catch(() => undefined);
       return set({ recording: false, last: session });
     }
     if (useTuner.getState().status !== 'listening') await useTuner.getState().start();
