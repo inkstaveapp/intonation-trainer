@@ -216,3 +216,30 @@
     opacity: 0;
   }
 }
+
+.tw-rec {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.tw-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--coral);
+}
+.tw-rec[data-recording='true'] .tw-rec-dot {
+  animation: tw-pulse 1s ease-in-out infinite;
+}
+@keyframes tw-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-rec[data-recording='true'] .tw-rec-dot,
+  .tw-flash {
+    animation: none;
+  }
+}

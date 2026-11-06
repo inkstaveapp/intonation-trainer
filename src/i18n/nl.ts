@@ -57,6 +57,11 @@ export const nl: Dict = {
   'drone.offset': 'Doel ten opzichte van gelijkzwevend:',
   'drone.noHeadphones':
     'Geen koptelefoon gevonden: de bourdon kan door de microfoon worden opgepikt',
+  'rec.start': 'Start opname',
+  'rec.stop': 'Stop opname',
+  'rec.label': 'Opn.',
+  'session.last': 'Laatste sessie: score',
+  'session.notes': 'noten',
   'tuner.start': 'Begin met luisteren',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Te luid: zet het ingangsniveau lager',

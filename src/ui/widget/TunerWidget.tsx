@@ -1,8 +1,9 @@
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { translate, type Key } from '~/i18n';
 import { INSTRUMENT_LIST } from '~/music/instruments';
 import { noteName } from '~/music/notes';
 import { SIG_IDS, SIGNATURES, useMetronome, type SigId } from '~/state/metronome';
+import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
 import { useWidget, type Corner } from '~/state/widget';
 import { CentsBar } from './CentsBar';
@@ -11,10 +12,28 @@ import './widget.css';
 
 const A_CHOICES = [440, 442, 443];
 
+const mmss = (ms: number) => {
+  const s = Math.floor(ms / 1000);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+/** Elapsed recording time as m:ss; UI only, so a coarse timer is fine. */
+function useElapsed(recording: boolean, startedMs: number): string {
+  const [, force] = useState(0);
+  useEffect(() => {
+    if (!recording) return;
+    const id = setInterval(() => force((n) => n + 1), 500);
+    return () => clearInterval(id);
+  }, [recording]);
+  return mmss(recording ? Date.now() - startedMs : 0);
+}
+
 export function TunerWidget() {
   const s = useTuner();
   const w = useWidget();
   const m = useMetronome();
+  const rec = useSession();
+  const elapsed = useElapsed(rec.recording, rec.startedMs);
   const t = (k: Key) => translate(s.lang, k);
   const root = useRef<HTMLElement>(null);
   const grab = useRef({ dx: 0, dy: 0 });
@@ -179,6 +198,15 @@ export function TunerWidget() {
           </div>
           <div className="tw-row tw-foot">
             {micButton}
+            <button
+              className="tw-chip tw-rec"
+              data-recording={rec.recording}
+              aria-label={rec.recording ? t('rec.stop') : t('rec.start')}
+              onClick={() => void rec.toggle()}
+            >
+              <span className="tw-rec-dot" aria-hidden="true" />
+              {rec.recording ? elapsed : t('rec.label')}
+            </button>
             <button className="tw-chip" aria-label={t('widget.size')} onClick={w.cycleSize}>
               {w.size.toUpperCase()}
             </button>
