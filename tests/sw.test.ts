@@ -15,6 +15,7 @@ function load(files: string[], version: string, existingCaches: string[] = []) {
   };
   const self = {
     location: { origin: 'https://app.test' },
+    registration: { scope: 'https://app.test/base/' },
     addEventListener: (type: string, fn: Listener) => (listeners[type] = fn),
     skipWaiting: vi.fn(),
     clients: { claim: vi.fn() },
@@ -36,10 +37,15 @@ function load(files: string[], version: string, existingCaches: string[] = []) {
 
 describe('service worker', () => {
   it('precaches the shell plus every listed file under a versioned cache', async () => {
-    const { caches, store, self, run } = load(['/assets/app.js', '/icon.svg'], 'abc123');
+    const { caches, store, self, run } = load(['assets/app.js', 'icon.svg'], 'abc123');
     await run('install');
     expect(caches.open).toHaveBeenCalledWith('intonation-abc123');
-    expect(store.addAll).toHaveBeenCalledWith(['/', '/assets/app.js', '/icon.svg']);
+    // Resolved against the worker's scope, so it works from a sub-path like /base/.
+    expect(store.addAll).toHaveBeenCalledWith([
+      'https://app.test/base/',
+      'https://app.test/base/assets/app.js',
+      'https://app.test/base/icon.svg',
+    ]);
     expect(self.skipWaiting).toHaveBeenCalled();
   });
 
@@ -58,10 +64,10 @@ describe('service worker', () => {
   it('serves navigations from the cached shell and ignores other origins and non-GET requests', async () => {
     const { caches, run } = load([], 'v');
     const nav = await run('fetch', {
-      request: { method: 'GET', url: 'https://app.test/history', mode: 'navigate' },
+      request: { method: 'GET', url: 'https://app.test/base/history', mode: 'navigate' },
     });
     expect(nav).toHaveBeenCalled();
-    expect(caches.match).toHaveBeenCalledWith('/', { ignoreSearch: true });
+    expect(caches.match).toHaveBeenCalledWith('https://app.test/base/', { ignoreSearch: true });
     expect(
       await run('fetch', { request: { method: 'GET', url: 'https://other.test/x', mode: 'cors' } }),
     ).not.toHaveBeenCalled();

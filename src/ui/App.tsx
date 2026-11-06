@@ -44,7 +44,7 @@ export function App() {
   return (
     <main style={{ padding: 20, maxWidth: 960, margin: '0 auto' }}>
       <header className="app-header">
-        <img className="logo" src="/icon.svg" alt="" />
+        <img className="logo" src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
         <h1>{translate(lang, 'appTitle')}</h1>
       </header>
       <nav className="app-nav">

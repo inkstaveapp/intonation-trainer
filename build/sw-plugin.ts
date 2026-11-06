@@ -4,22 +4,25 @@ import type { Plugin } from 'vite';
 
 /** Files from public/ that the app needs offline (hashed build output is added automatically). */
 export const PUBLIC_FILES = [
-  '/manifest.webmanifest',
-  '/icon.svg',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/icon-maskable-512.png',
-  '/apple-touch-icon.png',
+  'manifest.webmanifest',
+  'icon.svg',
+  'icon-192.png',
+  'icon-512.png',
+  'icon-maskable-512.png',
+  'apple-touch-icon.png',
 ];
 
 /**
  * Service worker source: precache everything, answer from the cache first, and open index.html for
- * any navigation. New versions install in the background and take over on the next load.
+ * any navigation. Files are listed relative to the worker's scope, so the app works from any base
+ * path (the site root, or a GitHub Pages sub-path). New versions install in the background and take
+ * over on the next load.
  */
 export function swSource(files: string[], version: string): string {
   return `// Generated at build time by build/sw-plugin.ts
 const CACHE = 'intonation-${version}';
-const FILES = ${JSON.stringify(['/', ...files])};
+const BASE = self.registration.scope; // the folder the app is served from, with a trailing slash
+const FILES = ${JSON.stringify(['', ...files])}.map((f) => new URL(f, BASE).href);
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
@@ -38,7 +41,7 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
   e.respondWith(
-    caches.match(req.mode === 'navigate' ? '/' : req, { ignoreSearch: true }).then((hit) => hit ?? fetch(req)),
+    caches.match(req.mode === 'navigate' ? BASE : req, { ignoreSearch: true }).then((hit) => hit ?? fetch(req)),
   );
 });
 `;
@@ -53,9 +56,9 @@ export function swPlugin(): Plugin {
       const files: string[] = [];
       for (const [name, out] of Object.entries(bundle)) {
         hash.update(name).update(out.type === 'chunk' ? out.code : out.source);
-        if (name !== 'index.html' && !name.endsWith('.map')) files.push('/' + name);
+        if (name !== 'index.html' && !name.endsWith('.map')) files.push(name);
       }
-      for (const f of PUBLIC_FILES) hash.update(readFileSync('public' + f)); // a changed icon must bump the cache
+      for (const f of PUBLIC_FILES) hash.update(readFileSync('public/' + f)); // a changed icon must bump the cache
       this.emitFile({
         type: 'asset',
         fileName: 'sw.js',

@@ -2,7 +2,11 @@
 
 Local-first intonation PWA for any melodic instrument (concert pitch by default, with clarinet presets) (Vite + React + TypeScript). No backend, no audio stored or sent.
 
+Live: https://inkstaveapp.github.io/intonation-trainer/ (GitHub Pages, deployed by `.github/workflows/pages.yml` on every push to `main` after lint, typecheck and tests pass).
+
 `npm run dev` · `npm test` · `npm run lint` · `npm run build`
+
+The app builds for the site root by default. For a sub-path, set `BASE_PATH` (CI uses `/<repo name>/`): `BASE_PATH=/intonation-trainer/ npm run build`.
 
 ## Assumptions
 
