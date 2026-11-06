@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { detectPitch } from '../src/audio/mpm';
-import { centsBetween, midiToFreq } from '../src/music/pitch';
+import { detectPitch } from '~/audio/mpm';
+import { centsBetween, midiToFreq } from '~/music/pitch';
 
 const SR = 48000;
 const harmonic = (f: number, amps: number[], n = 1024, sr = SR, phase = 0.3) => {

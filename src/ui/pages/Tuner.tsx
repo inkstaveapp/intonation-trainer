@@ -1,7 +1,7 @@
-import { INSTRUMENTS, type InstrumentId } from '../../music/instruments';
-import { noteName } from '../../music/notes';
-import { translate, type Key } from '../../i18n';
-import { useTuner } from '../../state/tuner';
+import { INSTRUMENT_LIST } from '~/music/instruments';
+import { noteName } from '~/music/notes';
+import { translate, type Key } from '~/i18n';
+import { useTuner } from '~/state/tuner';
 
 export function Tuner() {
   const s = useTuner();
@@ -19,13 +19,13 @@ export function Tuner() {
         <option value="nl">Nederlands</option>
       </select>{' '}
       <select
-        aria-label="instrument"
+        aria-label={t('instrument')}
         value={s.instrument}
-        onChange={(e) => s.setInstrument(e.target.value as InstrumentId)}
+        onChange={(e) => s.setInstrument(e.target.value)}
       >
-        {Object.keys(INSTRUMENTS).map((id) => (
-          <option key={id} value={id}>
-            {t(`instrument.${id}` as Key)}
+        {INSTRUMENT_LIST.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.names[s.lang]}
           </option>
         ))}
       </select>

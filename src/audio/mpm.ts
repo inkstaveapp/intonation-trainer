@@ -1,4 +1,4 @@
-import { centsBetween } from '../music/pitch';
+import { centsBetween } from '~/music/pitch';
 
 export interface PitchResult {
   freq: number;

@@ -1,14 +1,14 @@
 import { create } from 'zustand';
-import { PitchEngine, type PitchFrame, type Warning } from '../audio/engine';
-import { FrameFilter } from '../audio/filter';
+import { PitchEngine, type PitchFrame, type Warning } from '~/audio/engine';
+import { FrameFilter } from '~/audio/filter';
 import {
   DEFAULT_INSTRUMENT,
   getInstrument,
   soundingToWritten,
   type InstrumentId,
-} from '../music/instruments';
-import { A4_DEFAULT, centsBetween, clampA4, midiToFreq, nearestMidi } from '../music/pitch';
-import { detectLang, type Lang } from '../i18n';
+} from '~/music/instruments';
+import { A4_DEFAULT, centsBetween, clampA4, midiToFreq, nearestMidi } from '~/music/pitch';
+import { detectLang, type Lang } from '~/i18n';
 
 const DISPLAY_INTERVAL_MS = 80; // ~12 fps for the UI; scoring subscribers get every frame
 

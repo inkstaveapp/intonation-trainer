@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { en } from '../src/i18n/en';
-import { nl } from '../src/i18n/nl';
-import { detectLang, translate } from '../src/i18n';
+import { en } from '~/i18n/en';
+import { nl } from '~/i18n/nl';
+import { detectLang, translate } from '~/i18n';
 
 describe('i18n', () => {
   it('nl has exactly the keys of en, all non-empty', () => {

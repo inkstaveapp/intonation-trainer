@@ -1,10 +1,7 @@
 export const en = {
   appTitle: 'Intonation Trainer',
   language: 'Language',
-  'instrument.concert': 'Concert pitch (C)',
-  'instrument.eb': 'E♭ clarinet',
-  'instrument.bb': 'B♭ clarinet',
-  'instrument.bass': 'Bass clarinet',
+  instrument: 'Instrument',
   'tuner.start': 'Start listening',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Too loud: lower the input level',

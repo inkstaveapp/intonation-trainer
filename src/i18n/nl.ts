@@ -1,12 +1,9 @@
-import type { Dict } from './en';
+import type { Dict } from '~/i18n/en';
 
 export const nl: Dict = {
   appTitle: 'Intonatietrainer',
   language: 'Taal',
-  'instrument.concert': 'Klinkend (C)',
-  'instrument.eb': 'Es-klarinet',
-  'instrument.bb': 'Bes-klarinet',
-  'instrument.bass': 'Basklarinet',
+  instrument: 'Instrument',
   'tuner.start': 'Begin met luisteren',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Te luid: zet het ingangsniveau lager',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FrameFilter } from '../src/audio/filter';
+import { FrameFilter } from '~/audio/filter';
 
 describe('FrameFilter', () => {
   it('rejects weak frames and clears history', () => {

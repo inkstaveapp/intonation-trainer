@@ -1,5 +1,5 @@
-import type { InstrumentProfile } from '../music/instruments';
-import workletUrl from './worklet/pitch-processor.ts?worker&url';
+import type { InstrumentProfile } from '~/music/instruments';
+import workletUrl from '~/audio/worklet/pitch-processor.ts?worker&url';
 
 export interface PitchFrame {
   freq: number; // 0 when nothing periodic was found

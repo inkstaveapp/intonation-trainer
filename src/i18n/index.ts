@@ -1,5 +1,5 @@
-import { en, type Dict } from './en';
-import { nl } from './nl';
+import { en, type Dict } from '~/i18n/en';
+import { nl } from '~/i18n/nl';
 
 export type Lang = 'en' | 'nl';
 export type Key = keyof Dict;

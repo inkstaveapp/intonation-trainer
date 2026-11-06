@@ -1,4 +1,4 @@
-import { midiToFreq } from './pitch';
+import { midiToFreq } from '~/music/pitch';
 
 /** Just ratios per semitone above the drone (5-limit chromatic scale). */
 const JUST_RATIOS = [

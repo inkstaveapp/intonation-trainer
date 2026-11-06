@@ -1,4 +1,4 @@
-import { detectPitch } from '../mpm';
+import { detectPitch } from '~/audio/mpm';
 
 // Minimal typings for AudioWorkletGlobalScope (not in the DOM lib).
 declare const sampleRate: number;

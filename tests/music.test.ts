@@ -6,10 +6,16 @@ import {
   freqToMidi,
   midiToFreq,
   nearestMidi,
-} from '../src/music/pitch';
-import { INSTRUMENTS, soundingToWritten, writtenToSounding } from '../src/music/instruments';
-import { noteName, pitchClassName } from '../src/music/notes';
-import { targetFreq, targetOffsetCents } from '../src/music/tuning';
+} from '~/music/pitch';
+import {
+  getInstrument,
+  INSTRUMENT_LIST,
+  INSTRUMENTS,
+  soundingToWritten,
+  writtenToSounding,
+} from '~/music/instruments';
+import { noteName, pitchClassName } from '~/music/notes';
+import { targetFreq, targetOffsetCents } from '~/music/tuning';
 
 describe('pitch', () => {
   it('maps A4 and octaves', () => {
@@ -36,14 +42,31 @@ describe('pitch', () => {
 describe('instruments and notes', () => {
   it('transposes written <-> sounding', () => {
     const written = 72; // C5
-    expect(writtenToSounding(written, INSTRUMENTS.eb!)).toBe(75); // E♭
-    expect(writtenToSounding(written, INSTRUMENTS.bb!)).toBe(70); // B♭
-    expect(writtenToSounding(written, INSTRUMENTS.bass!)).toBe(58);
+    expect(writtenToSounding(written, INSTRUMENTS['clarinet-eb']!)).toBe(75); // E♭
+    expect(writtenToSounding(written, INSTRUMENTS['clarinet-bb']!)).toBe(70); // B♭
+    expect(writtenToSounding(written, INSTRUMENTS['clarinet-bass']!)).toBe(58);
     for (const i of Object.values(INSTRUMENTS))
       expect(soundingToWritten(writtenToSounding(60, i), i)).toBe(60);
   });
   it('concert pitch does not transpose', () => {
     expect(writtenToSounding(60, INSTRUMENTS.concert!)).toBe(60);
+  });
+  it('lookup table: every preset is well-formed, ids unique, Dutch names present', () => {
+    expect(new Set(INSTRUMENT_LIST.map((p) => p.id)).size).toBe(INSTRUMENT_LIST.length);
+    for (const p of INSTRUMENT_LIST) {
+      expect(p.minHz).toBeLessThan(p.maxHz);
+      expect(p.names.en && p.names.nl).toBeTruthy();
+      expect([1024, 2048]).toContain(p.windowSize);
+    }
+  });
+  it('presets select the right transposition and detector settings', () => {
+    expect(getInstrument('sax-alto').transposition).toBe(-9);
+    expect(getInstrument('horn-f').transposition).toBe(-7);
+    expect(getInstrument('piccolo').transposition).toBe(12);
+    expect(getInstrument('clarinet-bass').windowSize).toBe(2048);
+    expect(getInstrument('clarinet-bb').oddHarmonics).toBe(true);
+    expect(getInstrument('trumpet-bb').oddHarmonics).toBe(false);
+    expect(getInstrument('nope').id).toBe('concert');
   });
   it('names notes', () => {
     expect(noteName(69)).toBe('A4');
