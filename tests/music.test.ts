@@ -15,7 +15,7 @@ import {
   writtenToSounding,
 } from '~/music/instruments';
 import { noteName, pitchClassName } from '~/music/notes';
-import { targetFreq, targetOffsetCents } from '~/music/tuning';
+import { centsFromTarget, targetFreq, targetOffsetCents } from '~/music/tuning';
 
 describe('pitch', () => {
   it('maps A4 and octaves', () => {
@@ -90,5 +90,19 @@ describe('tuning', () => {
     const t = { kind: 'just', droneMidi: 60 } as const;
     const et = midiToFreq(64, 442);
     expect(centsBetween(targetFreq(64, t, 442), et)).toBeCloseTo(-13.69, 1);
+  });
+});
+
+describe('centsFromTarget', () => {
+  // B♭ clarinet: written C4 sounds B♭3 (58). Written E4 sounds D4 (62), a major third above the drone.
+  const bb = INSTRUMENTS['clarinet-bb']!;
+  const tuning = { kind: 'just', droneMidi: writtenToSounding(60, bb) } as const;
+  it('measures against the just target, not equal temperament', () => {
+    const sounding = writtenToSounding(64, bb);
+    const equal = midiToFreq(sounding, 442);
+    expect(centsFromTarget(equal, 442, tuning).cents).toBeCloseTo(13.69, 1); // ET third is 14 ¢ sharp of JI
+    expect(centsFromTarget(targetFreq(sounding, tuning, 442), 442, tuning).cents).toBeCloseTo(0);
+    expect(centsFromTarget(equal, 442, { kind: 'equal' }).cents).toBeCloseTo(0);
+    expect(centsFromTarget(equal, 442, tuning).midi).toBe(sounding);
   });
 });

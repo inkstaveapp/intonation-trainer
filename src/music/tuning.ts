@@ -1,4 +1,4 @@
-import { midiToFreq } from '~/music/pitch';
+import { centsBetween, midiToFreq, nearestMidi } from '~/music/pitch';
 
 /** Just ratios per semitone above the drone (5-limit chromatic scale). */
 const JUST_RATIOS = [
@@ -27,3 +27,9 @@ export const targetOffsetCents = (midi: number, tuning: Tuning): number => {
 
 export const targetFreq = (midi: number, tuning: Tuning, a4: number): number =>
   midiToFreq(midi, a4) * 2 ** (targetOffsetCents(midi, tuning) / 1200);
+
+/** Nearest note and the player's deviation in cents from that note's target in the given tuning. */
+export const centsFromTarget = (freq: number, a4: number, tuning: Tuning) => {
+  const midi = nearestMidi(freq, a4);
+  return { midi, cents: centsBetween(freq, targetFreq(midi, tuning, a4)) };
+};

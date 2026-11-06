@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { centsFromNearest } from '~/music/pitch';
-import { subscribeFrames, useTuner } from '~/state/tuner';
+import { centsFromTarget } from '~/music/tuning';
+import { subscribeFrames, tuningOf, useTuner } from '~/state/tuner';
 
 const SECONDS = 3;
 const RANGE = 50;
@@ -17,7 +17,8 @@ export function PitchTrail() {
   useEffect(() => {
     const pts: Point[] = [];
     const off = subscribeFrames((f, smoothed) => {
-      const c = smoothed === null ? null : centsFromNearest(smoothed, useTuner.getState().a4);
+      const st = useTuner.getState();
+      const c = smoothed === null ? null : centsFromTarget(smoothed, st.a4, tuningOf(st)).cents;
       pts.push({ t: f.t, c });
       while (pts.length > 1 && pts[0]!.t < f.t - SECONDS) pts.shift();
     });

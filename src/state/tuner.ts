@@ -5,9 +5,11 @@ import {
   DEFAULT_INSTRUMENT,
   getInstrument,
   soundingToWritten,
+  writtenToSounding,
   type InstrumentId,
 } from '~/music/instruments';
-import { A4_DEFAULT, centsBetween, clampA4, midiToFreq, nearestMidi } from '~/music/pitch';
+import { A4_DEFAULT, clampA4 } from '~/music/pitch';
+import { centsFromTarget, type Tuning } from '~/music/tuning';
 import { DEFAULT_TOLERANCE, type Tolerance } from '~/scoring/tolerance';
 import { metronome } from '~/state/metronome';
 import { detectLang, type Lang } from '~/i18n';
@@ -16,6 +18,7 @@ const DISPLAY_INTERVAL_MS = 80; // ~12 fps for the UI; scoring subscribers get e
 
 export interface Reading {
   writtenMidi: number;
+  soundingMidi: number;
   cents: number;
   freq: number;
 }
@@ -28,12 +31,25 @@ interface TunerState {
   reading: Reading | null;
   warnings: Warning[];
   tolerance: Tolerance;
+  tuningKind: 'equal' | 'just';
+  /** Drone tonic as a written pitch for the selected instrument. */
+  droneWritten: number;
   setLang: (l: Lang) => void;
   setInstrument: (i: InstrumentId) => void;
   setA4: (a4: number) => void;
+  setTuningKind: (k: 'equal' | 'just') => void;
+  setDroneWritten: (m: number) => void;
   start: () => Promise<void>;
   stop: () => Promise<void>;
 }
+
+/** Active tuning: equal temperament, or just intonation against the drone's sounding pitch. */
+export const tuningOf = (
+  s: Pick<TunerState, 'tuningKind' | 'droneWritten' | 'instrument'>,
+): Tuning =>
+  s.tuningKind === 'equal'
+    ? { kind: 'equal' }
+    : { kind: 'just', droneMidi: writtenToSounding(s.droneWritten, getInstrument(s.instrument)) };
 
 const filter = new FrameFilter();
 let lastDisplay = 0;
@@ -54,12 +70,14 @@ export const useTuner = create<TunerState>((set, get) => {
       if (now - lastDisplay < DISPLAY_INTERVAL_MS) return;
       lastDisplay = now;
       if (smoothed === null) return set({ reading: null });
-      const { a4, instrument } = get();
-      const sounding = nearestMidi(smoothed, a4);
+      const st = get();
+      const inst = getInstrument(st.instrument);
+      const { midi, cents } = centsFromTarget(smoothed, st.a4, tuningOf(st));
       set({
         reading: {
-          writtenMidi: soundingToWritten(sounding, getInstrument(instrument)),
-          cents: centsBetween(smoothed, midiToFreq(sounding, a4)),
+          writtenMidi: soundingToWritten(midi, inst),
+          soundingMidi: midi,
+          cents,
           freq: smoothed,
         },
       });
@@ -77,12 +95,16 @@ export const useTuner = create<TunerState>((set, get) => {
     reading: null,
     warnings: [],
     tolerance: DEFAULT_TOLERANCE,
+    tuningKind: 'equal',
+    droneWritten: 60,
     setLang: (lang) => set({ lang }),
     setInstrument: (instrument) => {
       set({ instrument });
       if (engine.running) engine.setProfile(getInstrument(instrument));
     },
     setA4: (a4) => set({ a4: clampA4(a4) }),
+    setTuningKind: (tuningKind) => set({ tuningKind }),
+    setDroneWritten: (droneWritten) => set({ droneWritten }),
     start: async () => {
       set({ warnings: [] });
       await engine.start(getInstrument(get().instrument));
