@@ -1,35 +1,123 @@
 # Intonation Trainer
 
-Local-first intonation PWA for any melodic instrument (concert pitch by default, with clarinet presets) (Vite + React + TypeScript). No backend, no audio stored or sent.
+[![Deploy](https://github.com/inkstaveapp/intonation-trainer/actions/workflows/pages.yml/badge.svg)](https://github.com/inkstaveapp/intonation-trainer/actions/workflows/pages.yml)
+[![License: 0BSD](https://img.shields.io/badge/license-0BSD-blue.svg)](LICENSE)
 
-Live: https://inkstaveapp.github.io/intonation-trainer/ (GitHub Pages, deployed by `.github/workflows/pages.yml` on every push to `main` after lint, typecheck and tests pass).
+Practise your intonation with live feedback. Play a note and see how many cents sharp or flat you are, score your playing, and keep a log of your sessions. It runs in the browser, works offline, and never records or uploads your audio.
 
-`npm run dev` · `npm test` · `npm run lint` · `npm run build`
+![The tuner in light and dark mode](docs/screenshot.png)
 
-The app builds for the site root by default. For a sub-path, set `BASE_PATH` (CI uses `/<repo name>/`): `BASE_PATH=/intonation-trainer/ npm run build`.
+**Try it: <https://inkstaveapp.github.io/intonation-trainer/>**
 
-## Assumptions
+It was built for clarinet but works for any melodic instrument.
 
-- Inter is named first in the font stack but not bundled (local-first, no CDN); falls back to system sans.
-- Tests run in Node; DOM-free logic only. Storage tests use `fake-indexeddb`.
-- Imports use the `~/` alias for `src/` (see `vite.config.ts` and `tsconfig.json`).
-- Time signatures: BPM counts the written pulse, so 6/8 gives six clicks per bar (accent on 1).
-- Metronome timing is on the audio clock; a short `setTimeout` loop only wakes the scheduler (100 ms look-ahead, 1.1 s when the tab is hidden).
-- Headphone detection reads output device labels (available after mic permission) and is a heuristic; unknown means no warning.
-- Mic, metronome and scoring share one `AudioContext` (`audio/context.ts`). Frames within ±30 ms of a click are dropped.
-- Scoring: notes are runs on one nearest pitch (gaps up to 100 ms bridged, runs under 150 ms dropped); the first 120 ms (attack) and last 50 ms are ignored, frames more than 40 cents from the note's median are treated as slides. Vibrato (3-9 Hz, width of 12 cents or more) is stored as centre plus width. Note score is 100 within ±5 cents, 0 at ±30, linear between; stability is 100 at 2 cents spread, 0 at 15; combined is 70% accuracy and 30% stability (weights saved with each session).
-- Storage: IndexedDB `sessions` (metadata, notes, summary), `tracks` (pitch track per session, loaded only on demand) and `settings` (one validated object). Sessions with no detected notes are shown but not saved. No audio is stored.
-- Pop-out: Document Picture-in-Picture where available (Chromium, secure context), else a `window.open` popup. The widget is rendered into that window via a React portal, with the app's styles copied in. While popped out, the pop-out window's own animation frames drive the pitch trail and beat dots, because a hidden main tab gets none.
-- CSV export (`src/export/`): per-session notes and a history summary. UTF-8 with BOM, comma delimiter, dot decimals, ISO timestamps (spreadsheets in locales that expect `;` and decimal commas, such as Dutch Excel, need Data > From Text/CSV to import it). Text cells are guarded against formula injection. The browser download lives in `download.ts` only, so a Capacitor build can swap it for Filesystem + Share. PDF export is not built.
-- Theme: System (default), Light or Dark, saved with the settings. `tokens.css` holds both palettes; `data-theme` on `<html>` forces one, and the pop-out window gets the same attribute.
-- PWA: `public/manifest.webmanifest`, icons, and a service worker generated at build time (`build/sw-plugin.ts`) that precaches the hashed build output. It serves from the cache first and opens `index.html` for any navigation, so the app works offline after one visit. New versions install in the background and apply on the next load. It registers only in production builds over http(s). Checked in Chromium: worker active, cache filled, deep link renders offline.
-- Logo: a 24x24 pixel-art tile drawn in `scripts/make-icons.py` (`python3 scripts/make-icons.py` rewrites the SVG and PNG icons in `public/`). The tile is mid-tone teal so it shows on both light and dark pages. The local image model was tried first but only produced low-contrast blobs.
-- Rendering never waits more than 1.5 s for saved settings, so blocked storage cannot leave a blank page.
-- Instrument pitch: the selector lists pitches (C, B♭, E♭ higher or lower, A, F, G, octave variants), each named with the instruments that use it, and sets only the transposition. Detection is the same for all instruments (`DETECTOR` in `audio/mpm.ts`: 50-4300 Hz, 2048-sample window, clarinet twelfth guard always on).
-- Adaptive search (`audio/range.ts`): detection cost grows with window size times lags searched, so after a confident note the search narrows to about an octave either side with a window to match. A note near the edge of that range, or any frame without a confident pitch, goes back to the full range, so a leap costs about one frame (inside the attack that scoring ignores). Silence skips detection. Measured per frame in Node at 48 kHz, steady note: 82-110 Hz 2.06 ms (no saving), 220 Hz 1.27, 330 Hz 0.43, 440 Hz 0.34, 880 Hz 0.10, 1760 Hz 0.06. Low notes save little. Not yet measured inside a browser AudioWorklet or on a phone.
-- Tempo: type the BPM, hold − or + to repeat (the step grows from 1 to 5 after about a second), drag the slider, use arrow keys (Shift or Page keys for 10), or tap.
-- Diagnostics: open the app with `?debug` to show detector time per frame (averaged in the worklet), updates per second and audio latency. Compare the detector time with the audio-block budget (128 samples, about 2.7 ms at 48 kHz). With the metronome on Sound, updates per second read a little under 60 because frames around clicks are dropped.
-- Listening errors: if the microphone cannot start, the widget says why (page not on HTTPS or localhost, permission blocked, no microphone, other). The audio context is created on the Listen click, before the permission prompt, never at page load.
-- Note range calibration (Tuner page): play the lowest and highest note once (each held until the pitch is steady, with a pause between). The range is saved per instrument pitch and replaces the default 50-4300 Hz as the detector's widest search, with two semitones of slack; the adaptive narrowing then works inside it. Measured at a B♭ clarinet's low D3: 1.67 ms per detection with the default range, 0.97 ms calibrated. A note outside the saved range is not detected, so use "Use automatic range" if that is a problem.
-- Audio devices (Tuner page): choose the microphone and, in Chromium, the sound output (`AudioContext.setSinkId`; Firefox and Safari cannot, and the panel says so). Choices are saved; a saved device that is gone falls back to the system default. "No microphone detected" shows in the widget and the panel (browsers that hide devices before permission may show it until Listen is pressed once). Unplugging the microphone while listening stops capture with a message.
-- No Capacitor yet; browser APIs are isolated in `audio/`, `storage/` and `ui/`.
+## Features
+
+- A live tuner that shows the written note you are playing, how far off it is in cents, and a three second pitch trail.
+- An instrument pitch selector (C, B♭, E♭, A, F, G, and octave variants). Notes are shown as written for your instrument and scored against the sounding pitch.
+- A metronome from 30 to 250 BPM with an accented downbeat. Set the tempo by typing it, holding − or +, dragging the slider, or tapping. Choose a sound, a flash or a vibration for the click.
+- A drone and a reference A, with equal temperament or just intonation as the target.
+- Session recording with a score for every note, a report with a per-note chart, your five worst notes, and a sharp or flat tendency for each note. Sessions are kept in a history and can be exported as CSV.
+- Three ways to use the tuner: a full page, a floating widget on the other pages, or a separate small window (Picture-in-Picture) that stays on top of your sheet music.
+- Optional setup: tell the app your lowest and highest note so detection uses less processing, and choose your microphone and sound output.
+- English and Dutch, with a light, dark or system theme.
+- Installable as an app, and usable offline after the first visit.
+
+## Using it
+
+1. Open the app and pick the pitch of your instrument.
+2. Press **Listen** and allow the microphone.
+3. Play a note. The widget shows the note and the cents deviation. The dot is teal within 5 cents, amber within 15 and coral beyond.
+4. Press **Rec** to record a session. When you stop, the report opens.
+
+Use headphones when you run the metronome or the drone, or the microphone will pick them up.
+
+## Privacy
+
+Audio is analysed in your browser and is never stored or sent anywhere. The app keeps only what it needs on your own device, in the browser's storage: your settings, and for each recorded session the pitch track and the scores. There is no account, no server and no tracking.
+
+## Browser support
+
+The app needs a secure page (HTTPS or `localhost`) to use the microphone.
+
+| Browser                                  | Notes                                                                                                                                                                              |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Chrome, Edge and other Chromium browsers | Everything works, including the Picture-in-Picture window and choosing the sound output. This is where the app is developed and tested.                                            |
+| Firefox                                  | Should work, but is untested. It falls back to a normal pop-up window and cannot choose the sound output.                                                                          |
+| Safari and iOS                           | Should work, but is untested. It uses a normal pop-up window for the pop-out, which may not work on iOS. The vibration click mode and choosing the sound output are not available. |
+
+## Status
+
+This is an early release. The pitch detection and scoring were tuned on synthetic tones and a fake microphone, and have not yet been tried widely with real instruments or on phones. If a threshold feels wrong when you play, please open an issue.
+
+Not built yet: a melody or MusicXML mode, ear training, accounts and sync, a native app wrapper, PDF export and Dutch note names.
+
+## Development
+
+You need Node.js 22 or newer.
+
+```sh
+git clone https://github.com/inkstaveapp/intonation-trainer.git
+cd intonation-trainer
+npm install
+npm run dev
+```
+
+The dev server runs on <http://localhost:5173>, and the microphone works there.
+
+| Command             | What it does                                        |
+| ------------------- | --------------------------------------------------- |
+| `npm run dev`       | Start the dev server                                |
+| `npm test`          | Run the unit tests (Vitest)                         |
+| `npm run lint`      | Check code with ESLint and formatting with Prettier |
+| `npm run typecheck` | Check types                                         |
+| `npm run build`     | Typecheck and build to `dist/`                      |
+| `npm run preview`   | Serve the build locally                             |
+
+Open the app with `?debug` on the end to see how long each pitch detection takes, how many updates per second you get, and the audio latency.
+
+### Project layout
+
+```text
+src/
+  audio/      microphone, pitch detection (audio worklet), metronome, tones
+  music/      pitch maths, instrument pitches, note names, tunings
+  scoring/    note segmentation and scoring
+  state/      small stores (zustand) and settings persistence
+  storage/    IndexedDB for sessions and settings
+  export/     CSV export
+  i18n/       English and Dutch strings
+  ui/         pages, the tuner widget and charts
+tests/        unit tests
+build/        service worker generator (Vite plugin)
+scripts/      icon generator
+docs/         technical notes
+```
+
+Imports inside `src/` use the `~/` alias, for example `import { noteName } from '~/music/notes'`.
+
+### Deployment
+
+Every push to `main` runs lint, typecheck and the tests, then publishes to GitHub Pages through `.github/workflows/pages.yml`. The site lives under a sub-path, so the build reads its base path from `BASE_PATH`:
+
+```sh
+BASE_PATH=/intonation-trainer/ npm run build
+```
+
+Without `BASE_PATH` the app builds for the site root.
+
+### Logo
+
+The logo is a 24 by 24 pixel drawing in `scripts/make-icons.py`. Run `python3 scripts/make-icons.py` (it needs Pillow) to regenerate the icons in `public/`.
+
+## How it works
+
+The technical notes are in [docs/how-it-works.md](docs/how-it-works.md): pitch detection, the adaptive search range, scoring, the metronome clock, storage and the offline support.
+
+## Contributing
+
+Issues and pull requests are welcome. Before you open a pull request, run `npm run lint`, `npm run typecheck` and `npm test`.
+
+## Licence
+
+[BSD Zero Clause License](LICENSE). Do whatever you like with it.
