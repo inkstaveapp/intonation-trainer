@@ -51,11 +51,10 @@ describe('instruments and notes', () => {
   it('concert pitch does not transpose', () => {
     expect(writtenToSounding(60, INSTRUMENTS.concert!)).toBe(60);
   });
-  it('lookup table: every preset is well-formed, ids unique, Dutch names present', () => {
+  it('lookup table: every preset is well-formed, ids unique', () => {
     expect(new Set(INSTRUMENT_LIST.map((p) => p.id)).size).toBe(INSTRUMENT_LIST.length);
     for (const p of INSTRUMENT_LIST) {
       expect(p.minHz).toBeLessThan(p.maxHz);
-      expect(p.names.en && p.names.nl).toBeTruthy();
       expect([1024, 2048]).toContain(p.windowSize);
     }
   });

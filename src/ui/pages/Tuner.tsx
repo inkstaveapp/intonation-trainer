@@ -25,7 +25,7 @@ export function Tuner() {
       >
         {INSTRUMENT_LIST.map((p) => (
           <option key={p.id} value={p.id}>
-            {p.names[s.lang]}
+            {t(`instrument.${p.id}` as Key)}
           </option>
         ))}
       </select>
