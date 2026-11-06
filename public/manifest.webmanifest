@@ -1,0 +1,9 @@
+{
+  "name": "Intonation Trainer",
+  "short_name": "Intonation",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#17191D",
+  "theme_color": "#17191D",
+  "icons": []
+}

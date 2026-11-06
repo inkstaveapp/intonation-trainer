@@ -1,0 +1,8 @@
+node_modules
+dist
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+*.log
