@@ -8,6 +8,7 @@ import {
   type InstrumentId,
 } from '~/music/instruments';
 import { A4_DEFAULT, centsBetween, clampA4, midiToFreq, nearestMidi } from '~/music/pitch';
+import { DEFAULT_TOLERANCE, type Tolerance } from '~/scoring/tolerance';
 import { detectLang, type Lang } from '~/i18n';
 
 const DISPLAY_INTERVAL_MS = 80; // ~12 fps for the UI; scoring subscribers get every frame
@@ -25,6 +26,7 @@ interface TunerState {
   status: 'idle' | 'listening' | 'paused';
   reading: Reading | null;
   warnings: Warning[];
+  tolerance: Tolerance;
   setLang: (l: Lang) => void;
   setInstrument: (i: InstrumentId) => void;
   setA4: (a4: number) => void;
@@ -72,6 +74,7 @@ export const useTuner = create<TunerState>((set, get) => {
     status: 'idle',
     reading: null,
     warnings: [],
+    tolerance: DEFAULT_TOLERANCE,
     setLang: (lang) => set({ lang }),
     setInstrument: (instrument) => {
       set({ instrument });
