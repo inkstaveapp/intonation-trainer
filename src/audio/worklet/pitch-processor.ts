@@ -15,11 +15,12 @@ interface Config {
   minHz: number;
   maxHz: number;
   windowSize: number;
+  guardTwelfth: boolean;
   prior?: number | undefined;
 }
 
 class PitchProcessor extends AudioWorkletProcessor {
-  private cfg: Config = { minHz: 190, maxHz: 2600, windowSize: 1024 };
+  private cfg: Config = { minHz: 190, maxHz: 2600, windowSize: 1024, guardTwelfth: true };
   private ring = new Float32Array(1024);
   private win = new Float32Array(1024);
   private pos = 0;

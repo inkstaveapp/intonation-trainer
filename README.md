@@ -1,6 +1,6 @@
 # Intonation Trainer
 
-Local-first clarinet intonation PWA (Vite + React + TypeScript). No backend, no audio stored or sent.
+Local-first intonation PWA for any melodic instrument (concert pitch by default, with clarinet presets) (Vite + React + TypeScript). No backend, no audio stored or sent.
 
 `npm run dev` · `npm test` · `npm run lint` · `npm run build`
 

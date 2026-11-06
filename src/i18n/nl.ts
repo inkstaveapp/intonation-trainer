@@ -3,6 +3,7 @@ import type { Dict } from './en';
 export const nl: Dict = {
   appTitle: 'Intonatietrainer',
   language: 'Taal',
+  'instrument.concert': 'Klinkend (C)',
   'instrument.eb': 'Es-klarinet',
   'instrument.bb': 'Bes-klarinet',
   'instrument.bass': 'Basklarinet',

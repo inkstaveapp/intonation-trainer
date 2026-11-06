@@ -36,11 +36,14 @@ describe('pitch', () => {
 describe('instruments and notes', () => {
   it('transposes written <-> sounding', () => {
     const written = 72; // C5
-    expect(writtenToSounding(written, INSTRUMENTS.eb)).toBe(75); // E♭
-    expect(writtenToSounding(written, INSTRUMENTS.bb)).toBe(70); // B♭
-    expect(writtenToSounding(written, INSTRUMENTS.bass)).toBe(58);
+    expect(writtenToSounding(written, INSTRUMENTS.eb!)).toBe(75); // E♭
+    expect(writtenToSounding(written, INSTRUMENTS.bb!)).toBe(70); // B♭
+    expect(writtenToSounding(written, INSTRUMENTS.bass!)).toBe(58);
     for (const i of Object.values(INSTRUMENTS))
       expect(soundingToWritten(writtenToSounding(60, i), i)).toBe(60);
+  });
+  it('concert pitch does not transpose', () => {
+    expect(writtenToSounding(60, INSTRUMENTS.concert!)).toBe(60);
   });
   it('names notes', () => {
     expect(noteName(69)).toBe('A4');

@@ -1,7 +1,12 @@
 import { create } from 'zustand';
 import { PitchEngine, type PitchFrame, type Warning } from '../audio/engine';
 import { FrameFilter } from '../audio/filter';
-import { INSTRUMENTS, soundingToWritten, type InstrumentId } from '../music/instruments';
+import {
+  DEFAULT_INSTRUMENT,
+  getInstrument,
+  soundingToWritten,
+  type InstrumentId,
+} from '../music/instruments';
 import { A4_DEFAULT, centsBetween, clampA4, midiToFreq, nearestMidi } from '../music/pitch';
 import { detectLang, type Lang } from '../i18n';
 
@@ -50,7 +55,7 @@ export const useTuner = create<TunerState>((set, get) => {
       const sounding = nearestMidi(smoothed, a4);
       set({
         reading: {
-          writtenMidi: soundingToWritten(sounding, INSTRUMENTS[instrument]),
+          writtenMidi: soundingToWritten(sounding, getInstrument(instrument)),
           cents: centsBetween(smoothed, midiToFreq(sounding, a4)),
           freq: smoothed,
         },
@@ -62,7 +67,7 @@ export const useTuner = create<TunerState>((set, get) => {
 
   return {
     lang: detectLang(),
-    instrument: 'eb',
+    instrument: DEFAULT_INSTRUMENT,
     a4: A4_DEFAULT,
     status: 'idle',
     reading: null,
@@ -70,12 +75,12 @@ export const useTuner = create<TunerState>((set, get) => {
     setLang: (lang) => set({ lang }),
     setInstrument: (instrument) => {
       set({ instrument });
-      if (engine.running) engine.setProfile(INSTRUMENTS[instrument]);
+      if (engine.running) engine.setProfile(getInstrument(instrument));
     },
     setA4: (a4) => set({ a4: clampA4(a4) }),
     start: async () => {
       set({ warnings: [] });
-      await engine.start(INSTRUMENTS[get().instrument]);
+      await engine.start(getInstrument(get().instrument));
       set({ status: 'listening' });
     },
     stop: async () => {

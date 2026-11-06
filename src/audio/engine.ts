@@ -80,8 +80,14 @@ export class PitchEngine {
 
   private configure() {
     if (!this.node || !this.profile) return;
-    const { minHz, maxHz, windowSize } = this.profile;
-    this.node.port.postMessage({ minHz, maxHz, windowSize, prior: this.prior });
+    const { minHz, maxHz, windowSize, oddHarmonics } = this.profile;
+    this.node.port.postMessage({
+      minHz,
+      maxHz,
+      windowSize,
+      guardTwelfth: oddHarmonics,
+      prior: this.prior,
+    });
   }
 
   private handle(f: PitchFrame) {

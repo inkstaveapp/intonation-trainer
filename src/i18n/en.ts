@@ -1,6 +1,7 @@
 export const en = {
   appTitle: 'Intonation Trainer',
   language: 'Language',
+  'instrument.concert': 'Concert pitch (C)',
   'instrument.eb': 'E♭ clarinet',
   'instrument.bb': 'B♭ clarinet',
   'instrument.bass': 'Bass clarinet',
