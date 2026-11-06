@@ -1,4 +1,6 @@
+import { RMS_FLOOR } from '~/audio/filter';
 import { DETECTOR, detectPitch } from '~/audio/mpm';
+import { RangeTracker } from '~/audio/range';
 
 // Minimal typings for AudioWorkletGlobalScope (not in the DOM lib).
 declare const sampleRate: number;
@@ -17,6 +19,7 @@ interface Config {
 
 class PitchProcessor extends AudioWorkletProcessor {
   private prior: number | undefined;
+  private range = new RangeTracker(sampleRate);
   private ring = new Float32Array(DETECTOR.windowSize);
   private win = new Float32Array(DETECTOR.windowSize);
   private pos = 0;
@@ -63,7 +66,20 @@ class PitchProcessor extends AudioWorkletProcessor {
     const rms = Math.sqrt(sum / n);
     // AudioWorkletGlobalScope has no performance.now(); Date.now() is 1 ms coarse, so average over 60 frames.
     const t0 = Date.now();
-    const r = detectPitch(this.win, { sampleRate, ...DETECTOR, prior: this.prior });
+    // Search only as wide as the current note allows: the most recent samples, a narrower lag range.
+    // Below the level the downstream filter would reject anyway there is nothing to detect: skip the work.
+    const { minHz, maxHz, windowSize } = this.range.current;
+    const r =
+      rms < RMS_FLOOR
+        ? null
+        : detectPitch(this.win.subarray(this.win.length - windowSize), {
+            sampleRate,
+            minHz,
+            maxHz,
+            guardMinHz: DETECTOR.minHz,
+            prior: this.prior,
+          });
+    this.range.update(r);
     this.costSum += Date.now() - t0;
     if (++this.costN === 60) {
       this.costMs = this.costSum / 60;

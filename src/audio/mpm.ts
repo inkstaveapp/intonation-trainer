@@ -14,6 +14,8 @@ export interface DetectOptions {
   maxHz: number;
   /** Known target pitch in Hz (exercise mode). Octave/twelfth candidates are folded onto it. */
   prior?: number | undefined;
+  /** Lowest pitch the twelfth guard may report, even if below the lag search range. Defaults to minHz. */
+  guardMinHz?: number;
 }
 
 const KEY_MAX_RATIO = 0.9; // MPM "k": first key maximum above k * global max
@@ -87,7 +89,7 @@ export function detectPitch(x: Float32Array, o: DetectOptions): PitchResult | nu
 
   // Twelfth guard: a strong 3rd harmonic can win the NSDF. If f/3 has real energy, it is the fundamental.
   const sub = freq / 3;
-  if (sub >= o.minHz) {
+  if (sub >= (o.guardMinHz ?? o.minHz)) {
     const fundamental = toneMagnitude(x, freq, o.sampleRate);
     if (toneMagnitude(x, sub, o.sampleRate) >= SUBHARMONIC_RATIO * fundamental) freq = sub;
   }
