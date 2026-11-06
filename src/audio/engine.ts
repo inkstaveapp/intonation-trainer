@@ -21,6 +21,8 @@ export interface EngineHandlers {
   onAutoPause: () => void;
   /** Frames at these AudioContext times are dropped (e.g. around metronome clicks). */
   isMuted?: (t: number) => boolean;
+  /** The microphone stopped delivering sound (unplugged, or taken away by the system). */
+  onInputLost?: () => void;
 }
 
 let workletLoaded = false;
@@ -47,7 +49,7 @@ export class PitchEngine {
     return this.node !== null;
   }
 
-  async start(prior?: number): Promise<void> {
+  async start(prior?: number, inputId: string | null = null): Promise<void> {
     if (this.running) return;
     this.prior = prior;
     // The context first: resume() must run while the click's user gesture is still valid (Safari, iOS),
@@ -55,7 +57,12 @@ export class PitchEngine {
     const ctx = await getAudioContext();
     // Processing off: AGC/noise suppression would distort the pitch and level.
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+      audio: {
+        ...(inputId ? { deviceId: { exact: inputId } } : {}),
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+      },
     });
     try {
       if (!workletLoaded) {
@@ -65,6 +72,7 @@ export class PitchEngine {
       const node = new AudioWorkletNode(ctx, 'pitch-processor', { numberOfOutputs: 0 });
       node.port.onmessage = (e: MessageEvent<PitchFrame>) => this.handle(e.data);
       ctx.createMediaStreamSource(stream).connect(node);
+      stream.getAudioTracks().forEach((t) => (t.onended = () => this.h.onInputLost?.()));
       this.ctx = ctx;
       this.stream = stream;
       this.node = node;
@@ -92,7 +100,10 @@ export class PitchEngine {
 
   async stop(): Promise<void> {
     this.node?.disconnect();
-    this.stream?.getTracks().forEach((t) => t.stop());
+    this.stream?.getTracks().forEach((t) => {
+      t.onended = null; // stopping on purpose is not a lost microphone
+      t.stop();
+    });
     this.node = this.stream = this.ctx = null; // the shared context stays open for the metronome
   }
 

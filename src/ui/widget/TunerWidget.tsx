@@ -3,6 +3,7 @@ import { translate, type Key } from '~/i18n';
 import { INSTRUMENT_LIST } from '~/music/instruments';
 import { noteName } from '~/music/notes';
 import { useMetronome } from '~/state/metronome';
+import { useDevices } from '~/state/devices';
 import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
@@ -41,12 +42,14 @@ export function TunerWidget({ mode = 'floating' }: { mode?: WidgetMode }) {
   const m = useMetronome();
   const rec = useSession();
   const po = usePopOut();
+  const noMic = useDevices((d) => d.micAvailable === false);
   const elapsed = useElapsed(rec.recording, rec.startedMs);
   const t = (k: Key) => translate(s.lang, k);
   const root = useRef<HTMLElement>(null);
   const grab = useRef({ dx: 0, dy: 0 });
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
 
+  const warnNoMic = noMic && s.status !== 'listening';
   const collapsed = w.collapsed && !page; // the full-page tuner is always expanded
   const listening = s.status === 'listening';
   const cents = s.reading?.cents ?? null;
@@ -76,6 +79,7 @@ export function TunerWidget({ mode = 'floating' }: { mode?: WidgetMode }) {
   const micButton = (
     <button
       className="tw-btn"
+      data-warn={warnNoMic}
       aria-label={listening ? t('tuner.stop') : t('tuner.start')}
       onClick={() => void (listening ? s.stop() : s.start())}
     >
@@ -153,6 +157,7 @@ export function TunerWidget({ mode = 'floating' }: { mode?: WidgetMode }) {
           </div>
           {po.blocked && <p role="alert">{t('pip.blocked')}</p>}
           {s.error && <p role="alert">{t(`tuner.err.${s.error}` as Key)}</p>}
+          {warnNoMic && !s.error && <p role="alert">{t('devices.noMic')}</p>}
           <div className="tw-main">
             <div className="tw-note" aria-live="off">
               {note}
@@ -167,6 +172,7 @@ export function TunerWidget({ mode = 'floating' }: { mode?: WidgetMode }) {
           <div className="tw-row tw-foot">
             <button
               className="tw-chip"
+              data-warn={warnNoMic}
               aria-label={listening ? t('tuner.stop') : t('tuner.start')}
               onClick={() => void (listening ? s.stop() : s.start())}
             >

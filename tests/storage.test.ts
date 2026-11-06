@@ -62,6 +62,8 @@ describe('storage', () => {
       tolerance: DEFAULT_TOLERANCE,
       droneVolume: 0.3,
       range: { instrument: 'bb', lowHz: 146.8, highHz: 1760 },
+      inputId: 'usb-mic',
+      outputId: 'headset',
       widget: { collapsed: true, corner: 'tl', size: 'l', opacity: 0.8 },
       metronome: { bpm: 96, sig: '3/4', mode: 'flash' },
     };
@@ -78,6 +80,15 @@ describe('sanitizeSettings', () => {
     expect(sanitizeSettings({ range: { ...good, instrument: 'sax-tenor' } })).toEqual({});
     expect(sanitizeSettings({ range: { ...good, highHz: 'high' } })).toEqual({});
     expect(sanitizeSettings({ range: null })).toEqual({});
+  });
+
+  it('keeps device ids as strings and drops anything else', () => {
+    expect(sanitizeSettings({ inputId: 'abc', outputId: 'def' })).toEqual({
+      inputId: 'abc',
+      outputId: 'def',
+    });
+    expect(sanitizeSettings({ inputId: 5, outputId: '' })).toEqual({});
+    expect(sanitizeSettings({ inputId: 'x'.repeat(600) })).toEqual({});
   });
 
   it('keeps only instrument ids that exist', () => {

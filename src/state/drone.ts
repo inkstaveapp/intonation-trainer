@@ -5,6 +5,7 @@ import { headphonesState } from '~/audio/scheduler';
 import { Tone } from '~/audio/tone';
 import { getInstrument, writtenToSounding } from '~/music/instruments';
 import { midiToFreq } from '~/music/pitch';
+import { useDevices } from '~/state/devices';
 import { useTuner } from '~/state/tuner';
 
 const drone = new Tone([1, 0.5, 0.3, 0.15]);
@@ -39,7 +40,7 @@ export const useDrone = create<DroneState>((set, get) => ({
       return set({ playing: false });
     }
     drone.start(ctx, droneFreq(), get().volume);
-    set({ playing: true, headphones: await headphonesState() });
+    set({ playing: true, headphones: await headphonesState(useDevices.getState().outputId) });
   },
   toggleReference: async () => {
     const ctx = await getAudioContext();

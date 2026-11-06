@@ -4,6 +4,7 @@ import { loadSettings, saveSettings, type Settings } from '~/storage/db';
 import { SIGNATURES, useMetronome, type SigId } from '~/state/metronome';
 import { useDrone } from '~/state/drone';
 import { THEMES, useTheme } from '~/state/theme';
+import { useDevices } from '~/state/devices';
 import { useTuner } from '~/state/tuner';
 import { useWidget } from '~/state/widget';
 
@@ -44,6 +45,9 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
     if (lowHz !== undefined && highHz !== undefined && lowHz < highHz)
       out.range = { instrument: rg.instrument, lowHz, highHz };
   }
+  const id = (v: unknown) => (typeof v === 'string' && v.length > 0 && v.length <= 512 ? v : null);
+  if (id(raw.inputId)) out.inputId = id(raw.inputId);
+  if (id(raw.outputId)) out.outputId = id(raw.outputId);
   const dv = num(raw.droneVolume, 0, 0.6);
   if (dv !== undefined) out.droneVolume = dv;
   const corner = oneOf(w.corner, ['tl', 'tr', 'bl', 'br'] as const);
@@ -72,6 +76,8 @@ const collect = (): Settings => {
     tolerance: t.tolerance,
     droneVolume: useDrone.getState().volume,
     range: t.range,
+    inputId: useDevices.getState().inputId,
+    outputId: useDevices.getState().outputId,
     widget: { collapsed: w.collapsed, corner: w.corner, size: w.size, opacity: w.opacity },
     metronome: { bpm: m.bpm, sig: m.sig, mode: m.mode },
   };
@@ -88,6 +94,8 @@ function apply(s: Partial<Settings>): void {
     ...(s.range && { range: s.range }),
   });
   if (s.theme) useTheme.setState({ theme: s.theme });
+  if (s.inputId) useDevices.setState({ inputId: s.inputId });
+  if (s.outputId) void useDevices.getState().setOutput(s.outputId);
   if (s.droneVolume !== undefined) useDrone.setState({ volume: s.droneVolume });
   if (s.widget) useWidget.setState(s.widget);
   if (s.metronome) useMetronome.setState({ ...s.metronome, sig: s.metronome.sig as SigId });
@@ -112,6 +120,6 @@ export async function initPersistence(): Promise<void> {
       void saveSettings(now).catch(() => undefined);
     }, 300);
   };
-  for (const store of [useTuner, useWidget, useMetronome, useDrone, useTheme])
+  for (const store of [useTuner, useWidget, useMetronome, useDrone, useTheme, useDevices])
     store.subscribe(schedule);
 }

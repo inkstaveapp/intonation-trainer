@@ -57,9 +57,13 @@ export function bpmFromTaps(taps: number[]): number | null {
 }
 
 /** Heuristic: output device labels are only readable once mic permission is granted. */
-export async function headphonesState(): Promise<'ok' | 'none' | 'unknown'> {
+export async function headphonesState(
+  outputId: string | null = null,
+): Promise<'ok' | 'none' | 'unknown'> {
   const devices = await navigator.mediaDevices?.enumerateDevices?.();
-  const outs = (devices ?? []).filter((d) => d.kind === 'audiooutput' && d.label);
+  const outs = (devices ?? []).filter(
+    (d) => d.kind === 'audiooutput' && d.label && (outputId === null || d.deviceId === outputId),
+  );
   if (outs.length === 0) return 'unknown';
   return outs.some((d) =>
     /head(phone|set)|ear(phone|bud|pod)|airpods|buds|bluetooth/i.test(d.label),

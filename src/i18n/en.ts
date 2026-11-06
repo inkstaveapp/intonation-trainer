@@ -108,6 +108,17 @@ export const en = {
   'calibrate.hold': 'Keep holding the note',
   'calibrate.badOrder':
     'The highest note must be clearly above the lowest. Try the highest note again.',
+  'devices.title': 'Audio devices',
+  'devices.mic': 'Microphone',
+  'devices.output': 'Output device',
+  'devices.default': 'System default',
+  'devices.noMic':
+    'No microphone detected. Connect one or allow microphone access, then press Listen.',
+  'devices.noLabels': 'Press Listen once and allow the microphone to see the device names.',
+  'devices.outputUnsupported':
+    'This browser cannot choose the sound output from a page. Use the system sound settings.',
+  'devices.outputFailed': 'Could not switch the sound output.',
+  'tuner.err.lost': 'The microphone was disconnected.',
   'tuner.start': 'Start listening',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Too loud: lower the input level',

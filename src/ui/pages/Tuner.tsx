@@ -3,6 +3,7 @@ import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
 import { Calibrate } from './Calibrate';
+import { Devices } from './Devices';
 import { TunerWidget } from '~/ui/widget/TunerWidget';
 
 /** The tuner as a full page. The floating widget takes over on the other pages. */
@@ -21,6 +22,7 @@ export function Tuner() {
         <TunerWidget mode="page" />
       )}
       <p>{translate(lang, 'tuner.hint')}</p>
+      <Devices />
       <Calibrate />
       {last && (
         <p>

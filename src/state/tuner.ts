@@ -15,7 +15,8 @@ import { A4_DEFAULT, clampA4 } from '~/music/pitch';
 import { centsFromTarget, type Tuning } from '~/music/tuning';
 import { DEFAULT_TOLERANCE, type Tolerance } from '~/scoring/tolerance';
 import { metronome } from '~/state/metronome';
-import { detectLang, type Lang } from '~/i18n';
+import { detectLang, translate, type Lang } from '~/i18n';
+import { useDevices } from '~/state/devices';
 
 const DISPLAY_INTERVAL_MS = 80; // ~12 fps for the UI; scoring subscribers get every frame
 
@@ -103,10 +104,23 @@ export const useTuner = create<TunerState>((set, get) => {
     },
     onWarning: (w) => !get().warnings.includes(w) && set({ warnings: [...get().warnings, w] }),
     onAutoPause: () => set({ status: 'paused', reading: null }),
+    onInputLost: () => {
+      void engine.stop();
+      set({ status: 'idle', reading: null, error: 'lost' });
+      void refreshDevices();
+    },
     isMuted: (t) => metronome.isMuted(t),
   });
 
   const applyBounds = () => engine.setBounds(boundsOf(get()));
+
+  // Switching microphone while listening restarts capture on the new device.
+  useDevices.subscribe((s, prev) => {
+    if (s.inputId !== prev.inputId && get().status === 'listening')
+      void get()
+        .stop()
+        .then(() => get().start());
+  });
 
   return {
     lang: detectLang(),
@@ -141,8 +155,21 @@ export const useTuner = create<TunerState>((set, get) => {
       set({ warnings: [], error: null });
       try {
         applyBounds();
-        await engine.start();
+        const devices = useDevices.getState();
+        try {
+          await engine.start(undefined, devices.inputId);
+        } catch (e) {
+          // A remembered microphone that is no longer connected: use the system default instead, once.
+          if (
+            devices.inputId === null ||
+            (e as { name?: unknown } | null)?.name !== 'OverconstrainedError'
+          )
+            throw e;
+          devices.setInput(null);
+          await engine.start(undefined, null);
+        }
         set({ status: 'listening' });
+        void refreshDevices(); // device names are only readable now that permission is granted
       } catch (e) {
         set({ error: micErrorKind(e, !!navigator.mediaDevices) });
       }
@@ -153,3 +180,12 @@ export const useTuner = create<TunerState>((set, get) => {
     },
   };
 });
+
+/** Re-reads the device lists, naming unnamed devices in the current language. */
+export const refreshDevices = (): Promise<void> => {
+  const lang = useTuner.getState().lang;
+  return useDevices
+    .getState()
+    .refresh({ mic: translate(lang, 'devices.mic'), output: translate(lang, 'devices.output') })
+    .catch(() => undefined);
+};

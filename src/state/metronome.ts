@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { Metronome } from '~/audio/metronome';
+import { useDevices } from '~/state/devices';
 import { getUiWindow, subscribeUiWindow } from '~/state/uiWindow';
 import { bpmFromTaps, clampBpm, headphonesState } from '~/audio/scheduler';
 
@@ -92,7 +93,11 @@ export const useMetronome = create<MetroState>((set, get) => {
       }
       sync();
       loopCtx = await metronome.start();
-      set({ running: true, headphones: get().mode === 'sound' ? await headphonesState() : 'ok' });
+      set({
+        running: true,
+        headphones:
+          get().mode === 'sound' ? await headphonesState(useDevices.getState().outputId) : 'ok',
+      });
       startLoop();
     },
   };

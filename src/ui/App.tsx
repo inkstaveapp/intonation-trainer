@@ -4,6 +4,7 @@ import { translate, type Key } from '~/i18n';
 import { useToneSync } from '~/state/drone';
 import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
+import { refreshDevices } from '~/state/tuner';
 import { applyTheme, THEMES, useTheme, type Theme } from '~/state/theme';
 import { useTuner } from '~/state/tuner';
 import { DebugPanel, debugEnabled } from '~/ui/DebugPanel';
@@ -24,6 +25,7 @@ export function App() {
   const last = useSession((s) => s.last);
   const popOut = usePopOut((s) => s.win);
   const { theme, setTheme } = useTheme();
+  useEffect(() => void refreshDevices(), [lang]);
   useToneSync();
   useEffect(() => {
     const apply = () => {

@@ -1,4 +1,4 @@
-export type MicError = 'insecure' | 'denied' | 'noMic' | 'failed';
+export type MicError = 'insecure' | 'denied' | 'noMic' | 'lost' | 'failed';
 
 /** Why listening could not start, in terms the player can act on. */
 export function micErrorKind(err: unknown, hasMediaDevices: boolean): MicError {

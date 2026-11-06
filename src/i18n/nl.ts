@@ -111,6 +111,18 @@ export const nl: Dict = {
   'calibrate.hold': 'Houd de noot aan',
   'calibrate.badOrder':
     'De hoogste noot moet duidelijk boven de laagste liggen. Probeer de hoogste noot opnieuw.',
+  'devices.title': 'Audioapparaten',
+  'devices.mic': 'Microfoon',
+  'devices.output': 'Uitvoerapparaat',
+  'devices.default': 'Systeemstandaard',
+  'devices.noMic':
+    'Geen microfoon gevonden. Sluit er een aan of geef toegang tot de microfoon en druk dan op Luister.',
+  'devices.noLabels':
+    'Druk één keer op Luister en sta de microfoon toe om de namen van de apparaten te zien.',
+  'devices.outputUnsupported':
+    'Deze browser kan de geluidsuitvoer niet vanaf een pagina kiezen. Gebruik de geluidsinstellingen van het systeem.',
+  'devices.outputFailed': 'Kon de geluidsuitvoer niet omschakelen.',
+  'tuner.err.lost': 'De microfoon is losgekoppeld.',
   'tuner.start': 'Begin met luisteren',
   'tuner.stop': 'Stop',
   'tuner.tooLoud': 'Te luid: zet het ingangsniveau lager',

@@ -22,6 +22,9 @@ export interface Settings {
   tolerance: Tolerance;
   droneVolume: number;
   range: SavedRange | null;
+  /** Chosen microphone and output device ids; null is the system default. */
+  inputId: string | null;
+  outputId: string | null;
   widget: {
     collapsed: boolean;
     corner: 'tl' | 'tr' | 'bl' | 'br';

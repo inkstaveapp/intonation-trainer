@@ -386,3 +386,10 @@
     align-self: end;
   }
 }
+
+/* No microphone detected: the listen buttons stay visible but are marked. */
+.tw-btn[data-warn='true'],
+.tw-chip[data-warn='true'] {
+  border-color: var(--coral);
+  color: var(--coral);
+}
