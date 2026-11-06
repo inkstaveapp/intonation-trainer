@@ -5,6 +5,13 @@ import type { Tolerance } from '~/scoring/tolerance';
 /** A session without its pitch track, so history listings stay light. */
 export type SessionRecord = Omit<Session, 'track'>;
 
+/** The player's lowest and highest note (sounding Hz) for one instrument pitch. */
+export interface SavedRange {
+  instrument: string;
+  lowHz: number;
+  highHz: number;
+}
+
 export interface Settings {
   lang: 'en' | 'nl';
   theme: 'system' | 'light' | 'dark';
@@ -14,6 +21,7 @@ export interface Settings {
   droneWritten: number;
   tolerance: Tolerance;
   droneVolume: number;
+  range: SavedRange | null;
   widget: {
     collapsed: boolean;
     corner: 'tl' | 'tr' | 'bl' | 'br';

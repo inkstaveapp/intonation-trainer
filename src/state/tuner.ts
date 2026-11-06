@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { PitchEngine, type PitchFrame, type Warning } from '~/audio/engine';
 import { FrameFilter } from '~/audio/filter';
+import { calibratedBounds, type Bounds } from '~/audio/range';
+import type { SavedRange } from '~/storage/db';
 import { micErrorKind, type MicError } from '~/audio/micError';
 import {
   DEFAULT_INSTRUMENT,
@@ -32,6 +34,10 @@ interface TunerState {
   reading: Reading | null;
   warnings: Warning[];
   tolerance: Tolerance;
+  /** The calibrated note range; only used while its instrument pitch is the selected one. */
+  range: SavedRange | null;
+  /** True while the calibration flow runs, which needs the full default range. */
+  calibrating: boolean;
   /** Why the last attempt to listen failed; null when it did not. */
   error: MicError | null;
   tuningKind: 'equal' | 'just';
@@ -40,6 +46,8 @@ interface TunerState {
   setLang: (l: Lang) => void;
   setInstrument: (i: InstrumentId) => void;
   setA4: (a4: number) => void;
+  setRange: (r: SavedRange | null) => void;
+  setCalibrating: (c: boolean) => void;
   setTuningKind: (k: 'equal' | 'just') => void;
   setDroneWritten: (m: number) => void;
   start: () => Promise<void>;
@@ -53,6 +61,14 @@ export const tuningOf = (
   s.tuningKind === 'equal'
     ? { kind: 'equal' }
     : { kind: 'just', droneMidi: writtenToSounding(s.droneWritten, getInstrument(s.instrument)) };
+
+/** The detector's search bounds: the calibrated range if it fits this instrument pitch, else the default (null). */
+export const boundsOf = (
+  s: Pick<TunerState, 'range' | 'instrument' | 'calibrating'>,
+): Bounds | null =>
+  !s.calibrating && s.range && s.range.instrument === s.instrument
+    ? calibratedBounds(s.range.lowHz, s.range.highHz)
+    : null;
 
 const filter = new FrameFilter();
 let lastDisplay = 0;
@@ -90,6 +106,8 @@ export const useTuner = create<TunerState>((set, get) => {
     isMuted: (t) => metronome.isMuted(t),
   });
 
+  const applyBounds = () => engine.setBounds(boundsOf(get()));
+
   return {
     lang: detectLang(),
     instrument: DEFAULT_INSTRUMENT,
@@ -99,18 +117,30 @@ export const useTuner = create<TunerState>((set, get) => {
     warnings: [],
     tolerance: DEFAULT_TOLERANCE,
     error: null,
+    range: null,
+    calibrating: false,
     tuningKind: 'equal',
     droneWritten: 60,
     setLang: (lang) => set({ lang }),
     setInstrument: (instrument) => {
       set({ instrument });
+      applyBounds();
     },
     setA4: (a4) => set({ a4: clampA4(a4) }),
+    setRange: (range) => {
+      set({ range });
+      applyBounds();
+    },
+    setCalibrating: (calibrating) => {
+      set({ calibrating });
+      applyBounds();
+    },
     setTuningKind: (tuningKind) => set({ tuningKind }),
     setDroneWritten: (droneWritten) => set({ droneWritten }),
     start: async () => {
       set({ warnings: [], error: null });
       try {
+        applyBounds();
         await engine.start();
         set({ status: 'listening' });
       } catch (e) {

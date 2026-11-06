@@ -1,6 +1,6 @@
 import { RMS_FLOOR } from '~/audio/filter';
 import { DETECTOR, detectPitch } from '~/audio/mpm';
-import { RangeTracker } from '~/audio/range';
+import { DEFAULT_BOUNDS, RangeTracker, type Bounds } from '~/audio/range';
 
 // Minimal typings for AudioWorkletGlobalScope (not in the DOM lib).
 declare const sampleRate: number;
@@ -15,6 +15,8 @@ const UPDATES_PER_SECOND = 60;
 
 interface Config {
   prior?: number | undefined;
+  /** The player's calibrated range; null means the default. */
+  bounds: Bounds | null;
 }
 
 class PitchProcessor extends AudioWorkletProcessor {
@@ -34,6 +36,7 @@ class PitchProcessor extends AudioWorkletProcessor {
     super();
     this.port.onmessage = (e: MessageEvent<Config>) => {
       this.prior = e.data.prior;
+      this.range.setBounds(e.data.bounds ?? DEFAULT_BOUNDS);
     };
   }
 
@@ -76,7 +79,7 @@ class PitchProcessor extends AudioWorkletProcessor {
             sampleRate,
             minHz,
             maxHz,
-            guardMinHz: DETECTOR.minHz,
+            guardMinHz: this.range.bounds.minHz,
             prior: this.prior,
           });
     this.range.update(r);

@@ -1,4 +1,5 @@
 import { getAudioContext } from './context';
+import type { Bounds } from './range';
 import workletUrl from './worklet/pitch-processor.ts?worker&url';
 
 export interface PitchFrame {
@@ -33,6 +34,7 @@ export class PitchEngine {
   private stream: MediaStream | null = null;
   private node: AudioWorkletNode | null = null;
   private prior: number | undefined;
+  private bounds: Bounds | null = null;
   private lastSound = 0;
 
   constructor(private h: EngineHandlers) {}
@@ -77,6 +79,12 @@ export class PitchEngine {
     if (latency > HIGH_LATENCY_S) this.h.onWarning('highLatency');
   }
 
+  /** Limits the pitch search to the player's calibrated range; null restores the default. */
+  setBounds(bounds: Bounds | null): void {
+    this.bounds = bounds;
+    this.configure();
+  }
+
   setPrior(freq: number | undefined): void {
     this.prior = freq;
     this.configure();
@@ -89,7 +97,7 @@ export class PitchEngine {
   }
 
   private configure() {
-    this.node?.port.postMessage({ prior: this.prior });
+    this.node?.port.postMessage({ prior: this.prior, bounds: this.bounds });
   }
 
   private handle(f: PitchFrame) {

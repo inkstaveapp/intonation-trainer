@@ -37,6 +37,13 @@ export function sanitizeSettings(raw: unknown): Partial<Settings> {
   if (dw !== undefined) out.droneWritten = Math.round(dw);
   if (good !== undefined && warn !== undefined && zero !== undefined && good < warn && warn < zero)
     out.tolerance = { good, warn, zero };
+  const rg = isObj(raw.range) ? raw.range : null;
+  if (rg && typeof rg.instrument === 'string' && INSTRUMENTS[rg.instrument]) {
+    const lowHz = num(rg.lowHz, 30, 5000);
+    const highHz = num(rg.highHz, 30, 5000);
+    if (lowHz !== undefined && highHz !== undefined && lowHz < highHz)
+      out.range = { instrument: rg.instrument, lowHz, highHz };
+  }
   const dv = num(raw.droneVolume, 0, 0.6);
   if (dv !== undefined) out.droneVolume = dv;
   const corner = oneOf(w.corner, ['tl', 'tr', 'bl', 'br'] as const);
@@ -64,6 +71,7 @@ const collect = (): Settings => {
     droneWritten: t.droneWritten,
     tolerance: t.tolerance,
     droneVolume: useDrone.getState().volume,
+    range: t.range,
     widget: { collapsed: w.collapsed, corner: w.corner, size: w.size, opacity: w.opacity },
     metronome: { bpm: m.bpm, sig: m.sig, mode: m.mode },
   };
@@ -77,6 +85,7 @@ function apply(s: Partial<Settings>): void {
     ...(s.tuningKind && { tuningKind: s.tuningKind }),
     ...(s.droneWritten !== undefined && { droneWritten: s.droneWritten }),
     ...(s.tolerance && { tolerance: s.tolerance }),
+    ...(s.range && { range: s.range }),
   });
   if (s.theme) useTheme.setState({ theme: s.theme });
   if (s.droneVolume !== undefined) useDrone.setState({ volume: s.droneVolume });

@@ -61,6 +61,7 @@ describe('storage', () => {
       droneWritten: 62,
       tolerance: DEFAULT_TOLERANCE,
       droneVolume: 0.3,
+      range: { instrument: 'bb', lowHz: 146.8, highHz: 1760 },
       widget: { collapsed: true, corner: 'tl', size: 'l', opacity: 0.8 },
       metronome: { bpm: 96, sig: '3/4', mode: 'flash' },
     };
@@ -70,6 +71,15 @@ describe('storage', () => {
 });
 
 describe('sanitizeSettings', () => {
+  it('keeps a valid calibrated range and drops a bad one', () => {
+    const good = { instrument: 'bb', lowHz: 147, highHz: 1760 };
+    expect(sanitizeSettings({ range: good })).toEqual({ range: good });
+    expect(sanitizeSettings({ range: { ...good, lowHz: 2000 } })).toEqual({});
+    expect(sanitizeSettings({ range: { ...good, instrument: 'sax-tenor' } })).toEqual({});
+    expect(sanitizeSettings({ range: { ...good, highHz: 'high' } })).toEqual({});
+    expect(sanitizeSettings({ range: null })).toEqual({});
+  });
+
   it('keeps only instrument ids that exist', () => {
     expect(sanitizeSettings({ instrument: 'bb-low' })).toEqual({ instrument: 'bb-low' });
     expect(sanitizeSettings({ instrument: 'sax-tenor' })).toEqual({});
