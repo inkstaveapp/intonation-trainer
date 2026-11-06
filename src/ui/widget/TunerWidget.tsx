@@ -3,6 +3,7 @@ import { translate, type Key } from '~/i18n';
 import { INSTRUMENT_LIST } from '~/music/instruments';
 import { noteName } from '~/music/notes';
 import { SIG_IDS, SIGNATURES, useMetronome, type SigId } from '~/state/metronome';
+import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
 import { useWidget, type Corner } from '~/state/widget';
@@ -28,11 +29,12 @@ function useElapsed(recording: boolean, startedMs: number): string {
   return mmss(recording ? Date.now() - startedMs : 0);
 }
 
-export function TunerWidget() {
+export function TunerWidget({ pip = false }: { pip?: boolean }) {
   const s = useTuner();
   const w = useWidget();
   const m = useMetronome();
   const rec = useSession();
+  const po = usePopOut();
   const elapsed = useElapsed(rec.recording, rec.startedMs);
   const t = (k: Key) => translate(s.lang, k);
   const root = useRef<HTMLElement>(null);
@@ -46,7 +48,7 @@ export function TunerWidget() {
   const nextA = A_CHOICES[(A_CHOICES.indexOf(s.a4) + 1) % A_CHOICES.length]!;
 
   const down = (e: PointerEvent) => {
-    if ((e.target as HTMLElement).closest('button,select,input') || !root.current) return;
+    if (pip || (e.target as HTMLElement).closest('button,select,input') || !root.current) return;
     const r = root.current.getBoundingClientRect();
     grab.current = { dx: e.clientX - r.left, dy: e.clientY - r.top };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -87,7 +89,7 @@ export function TunerWidget() {
       ref={root}
       className="tw"
       data-collapsed={w.collapsed}
-      data-corner={drag ? 'drag' : w.corner}
+      data-corner={pip ? 'pip' : drag ? 'drag' : w.corner}
       data-size={w.size}
       data-dragging={drag !== null}
       style={{
@@ -132,8 +134,16 @@ export function TunerWidget() {
             >
               A {s.a4}
             </button>
+            <button
+              className="tw-btn"
+              aria-label={po.win ? t('pip.close') : t('pip.open')}
+              onClick={() => void po.toggle()}
+            >
+              ⧉
+            </button>
             {collapseButton}
           </div>
+          {po.blocked && <p role="alert">{t('pip.blocked')}</p>}
           <div className="tw-note" aria-live="off">
             {note}
           </div>
@@ -207,17 +217,21 @@ export function TunerWidget() {
               <span className="tw-rec-dot" aria-hidden="true" />
               {rec.recording ? elapsed : t('rec.label')}
             </button>
-            <button className="tw-chip" aria-label={t('widget.size')} onClick={w.cycleSize}>
-              {w.size.toUpperCase()}
-            </button>
-            <input
-              type="range"
-              min={60}
-              max={100}
-              value={Math.round(w.opacity * 100)}
-              aria-label={t('widget.opacity')}
-              onChange={(e) => w.setOpacity(Number(e.target.value) / 100)}
-            />
+            {!pip && (
+              <>
+                <button className="tw-chip" aria-label={t('widget.size')} onClick={w.cycleSize}>
+                  {w.size.toUpperCase()}
+                </button>
+                <input
+                  type="range"
+                  min={60}
+                  max={100}
+                  value={Math.round(w.opacity * 100)}
+                  aria-label={t('widget.opacity')}
+                  onChange={(e) => w.setOpacity(Number(e.target.value) / 100)}
+                />
+              </>
+            )}
           </div>
         </div>
       )}

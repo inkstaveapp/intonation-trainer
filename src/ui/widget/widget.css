@@ -150,11 +150,16 @@
 .cents-dot[data-state='bad'] {
   background: var(--coral);
 }
-.pitch-trail {
-  display: block;
-  width: 100%;
+.pitch-trail-wrap {
+  position: relative;
   height: 40px;
   margin-top: 12px;
+}
+.pitch-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 .tw [role='alert'] {
   color: var(--coral);
@@ -242,4 +247,34 @@
   .tw-flash {
     animation: none;
   }
+}
+
+.tw[data-corner='pip'] {
+  position: static;
+  transform: none;
+  opacity: 1 !important;
+  box-sizing: border-box;
+  height: 100vh;
+  padding: 12px;
+  display: flex;
+  overflow: auto;
+}
+.tw[data-corner='pip'][data-collapsed='true'] {
+  align-items: center;
+}
+/* Fill whatever window size the user picks: the pitch trail absorbs spare height. */
+.tw[data-corner='pip'] .tw-card {
+  flex: 1;
+  min-width: 0; /* a flex item otherwise refuses to shrink below its widest select/option */
+  width: auto;
+  display: flex;
+  flex-direction: column;
+}
+.tw[data-corner='pip'] .pitch-trail-wrap {
+  flex: 1;
+  height: auto;
+  min-height: 40px;
+}
+.tw[data-corner='pip'] .tw-pill {
+  width: 100%;
 }

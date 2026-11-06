@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { translate, type Key } from '~/i18n';
 import { useToneSync } from '~/state/drone';
+import { usePopOut } from '~/state/popout';
 import { useSession } from '~/state/session';
 import { useTuner } from '~/state/tuner';
 import { Drone } from '~/ui/pages/Drone';
@@ -18,6 +20,7 @@ export function App() {
   const [page, setPage] = useState<PageId>('tuner');
   const [reportId, setReportId] = useState<string | null>(null);
   const last = useSession((s) => s.last);
+  const popOut = usePopOut((s) => s.win);
   useToneSync();
   useEffect(() => {
     if (last) setReportId(last.id); // show the report as soon as a recording stops
@@ -57,7 +60,7 @@ export function App() {
           return <Page />;
         })()
       )}
-      <TunerWidget />
+      {popOut ? createPortal(<TunerWidget pip />, popOut.document.body) : <TunerWidget />}
     </main>
   );
 }

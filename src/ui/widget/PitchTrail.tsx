@@ -59,12 +59,27 @@ export function PitchTrail() {
       }
       ctx.stroke();
     };
-    const id = setInterval(draw, DRAW_MS);
+    // The canvas's own window drives drawing: a hidden main tab would stall a pop-out's trail.
+    const view = canvas.current?.ownerDocument.defaultView ?? window;
+    let last = 0;
+    let raf = 0;
+    const tick = (now: number) => {
+      if (now - last >= DRAW_MS) {
+        last = now;
+        draw();
+      }
+      raf = view.requestAnimationFrame(tick);
+    };
+    raf = view.requestAnimationFrame(tick);
     return () => {
       off();
-      clearInterval(id);
+      view.cancelAnimationFrame(raf);
     };
   }, []);
 
-  return <canvas ref={canvas} className="pitch-trail" aria-hidden="true" />;
+  return (
+    <div className="pitch-trail-wrap">
+      <canvas ref={canvas} className="pitch-trail" aria-hidden="true" />
+    </div>
+  );
 }
